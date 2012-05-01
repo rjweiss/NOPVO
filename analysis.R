@@ -17,7 +17,6 @@ source("preprocessing.R")
 
 #Helper functions
 
-
 mahal_dist = function(diff, mat){
 #TODO: Fix Dirty Hack
   dist = as.numeric(tryCatch(t(diff) %*% solve(mat, tol=1e-21) %*% diff, error = function(e) return("0")))
