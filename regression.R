@@ -3,7 +3,7 @@ gc()
 
 library(Hmisc)
 
-nopvo <- spss.get("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/data/merged.sav")
+nopvo <- spss.get("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/merged.sav")
 
 #Lisa's SPSS
 
