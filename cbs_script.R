@@ -190,7 +190,7 @@ names(cbs_n) = nonreg_var_labels
 # 
 # write.csv(cbs_n, "cbs_n.csv")
 
-setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/data")
+setwd("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/data")
 rm(list=(setdiff(ls(), c(
   "nonreg_benchmarks", 
   "nonreg_benchmarks_est", 
@@ -203,4 +203,5 @@ rm(list=(setdiff(ls(), c(
   "ebb_reg_se",
   "ebb_reg_err",
   "cbs_n"))))
-save.image("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/CBS.RData")
+
+save.image("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/CBS.RData")

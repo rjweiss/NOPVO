@@ -3,7 +3,7 @@ gc()
 
 library(ggplot2)
 
-setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/")
+setwd("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/")
 
 source("analysis.R")
 

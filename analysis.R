@@ -1,6 +1,17 @@
 rm(list=ls(all=T))
 gc()
 
+# install.packages("Hmisc")
+# install.packages("gmodels")
+# install.packages("gdata")
+# install.packages("reshape")
+# install.packages("foreign")
+# install.packages("descr")
+# install.packages("sqldf")
+# install.packages("plyr")
+# install.packages("reshape2")
+# install.packages("car")
+
 #load libraries
 library(Hmisc)
 library(gmodels)
@@ -12,7 +23,7 @@ library(sqldf)
 library(plyr)
 library(reshape2)
 
-setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/")
+setwd("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/")
 source("preprocessing.R")
 
 #Helper functions
@@ -123,7 +134,7 @@ nopvo_nonregvars_wtd_err <- sqldf("select err._id, err._bureau, err.variable, er
 names(nopvo_nonregvars_wtd_err)[1:2] = names(nopvo_nonregvars_wtd_est)[1:2]
 
 #get nopvo bureau n
-nopvo_n = read.csv("/Users/Rebecca/Dropbox/NOPVO/current analysis/csv output/nopvo_n.csv")
+nopvo_n = read.csv("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/csv output/nopvo_n.csv")
 
 #################################
 #FINDING AVERAGE ABSOLUTE ERRORS#

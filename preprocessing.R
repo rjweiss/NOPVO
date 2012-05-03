@@ -8,10 +8,10 @@
 
 #Load in data
 
-load("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/GBA_tables.RData")
-load("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/CBS.RData")
-load("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/LISS.RData")
-load("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/NOPVO.RData")
+load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/GBA_tables.RData")
+load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/CBS.RData")
+load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/LISS.RData")
+load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/NOPVO.RData")
 
 #helper functions
 reformat <- function(l, benchmarks=F){
