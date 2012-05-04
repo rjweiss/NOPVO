@@ -3,12 +3,12 @@ gc()
 
 library(ggplot2)
 
-setwd("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
 
 source("analysis.R")
 
 #plotting all estimates, estimate errors, and standard errors for each NOPVO panel
-# setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/plots/summary_by_category")
+# setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_category")
 # 
 # data = melt(regvars, 
 #             id.vars = c("id", "bureau", "variable"),
@@ -44,7 +44,7 @@ source("analysis.R")
 #NOPVO
 
 #plotting all average absolute errors, unweighted and weighted, for each NOPVO panel
-setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/plots/summary_by_aae")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_aae")
 
 regvar_avg_abs_err$group = c("register")
 regvar_avg_abs_err_wtd$group = c("register")
@@ -221,7 +221,7 @@ d_ply(aae_delta, .(group), .progress = "text", function(df){
 ###################
 
 
-setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/plots/summary_by_mahal")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_mahal")
 
 # tmp = melt(regvars_dist)
 # d_ply(tmp, .(id), .progress = "text", function(dat){

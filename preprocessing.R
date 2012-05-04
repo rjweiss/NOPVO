@@ -2,16 +2,16 @@
 # gc()
 
 #source scripts
-#source("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/nopvo_script.R")
-#source("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/cbs_script.R")
-#source("/Users/Rebecca/Dropbox/NOPVO/current analysis/scripts/liss_script.R") #unloads Hmisc, loads car
+#source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/nopvo_script.R")
+#source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/cbs_script.R")
+#source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/liss_script.R") #unloads Hmisc, loads car
 
 #Load in data
 
-load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/GBA_tables.RData")
-load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/CBS.RData")
-load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/LISS.RData")
-load("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/NOPVO.RData")
+load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/GBA_tables.RData")
+load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/CBS.RData")
+load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/LISS.RData")
+load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/NOPVO.RData")
 
 #helper functions
 reformat <- function(l, benchmarks=F){

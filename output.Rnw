@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+%\usepackage{fullpage, 
+%\usepackaage{setspace, graphicx}
+\usepackage[margin=0.5in,paperwidth=8.5in,paperheight=11in]{geometry}
+\usepackage{amsmath,amsthm,amssymb,amscd}
+\usepackage{dcolumn} %for apsrtable
+\usepackage{Sweave}
+\usepackage{array,rotating,booktabs,ctable}
+\usepackage{longtable}
+\usepackage{enumerate}
+
+\begin{document}
+
+\SweaveOpts{concordance=TRUE}
+\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,strip.white=all}
+\SweaveOpts{prefix=TRUE,prefix.string=fig-,include=TRUE}
+
+\pagestyle{empty}
+
+
+<<label = libraries, keep.source=FALSE, echo=FALSE, results=HIDE>>=
+#install.packages("apsrtable")
+#install.packages("Hmisc")
+library(tools)
+library(Hmisc)
+library(apsrtable)
+library(xtable)
+library(memisc)
+@
+
+
+<<label = regression, keep.source = TRUE, echo=FALSE, results=TEX>>=
+source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/regression.R")
+# apsrtable(model1, model2, model3, model4, model3_unres, model2_unres, model4_unres, model1_unres,
+# order=c("longest"),
+# coef.names=c(
+#   "(Intercept)",
+#   "Health",
+#   "Gender dummy",
+#   "Age category 2 dummy",
+#   "Age category 3 dummy",
+#   "Age category 4 dummy",
+#   "Age category 5 dummy",
+# "Bureau 2 dummy",
+# "Bureau 3 dummy",
+# "Bureau 4 dummy",
+# "Bureau 6 dummy",
+# "Bureau 7 dummy",
+# "Bureau 8 dummy",
+# "Bureau 9 dummy",
+# "Bureau 10 dummy",
+# "Bureau 11 dummy",
+# "Bureau 12 dummy",
+# "Bureau 13 dummy",
+# "Bureau 14 dummy",
+# "Bureau 15 dummy",
+# "Bureau 16 dummy",
+# "Bureau 17 dummy",
+# "Bureau 18 dummy",
+# "Bureau 20 dummy"),
+# Sweave=TRUE, 
+# float="longtable")
+@
+
+<<label=model1, results=tex, echo=FALSE>>=
+apsrtable(model1)
+toLatex(mtable(model1, summary.stats = c("R-squared", "F", "N", "sigma")), useBooktabs=TRUE)
+@ 
+
+<<label=model2, results=tex, echo=FALSE>>=
+apsrtable(model2)
+@ 
+
+<<label=model3, results=tex, echo=FALSE>>=
+apsrtable(model3)
+@ 
+
+<<label=model4, results=tex, echo=FALSE>>=
+apsrtable(model4)
+@ 
+
+
+
+\end{document}

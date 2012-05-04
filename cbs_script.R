@@ -3,7 +3,7 @@
 rm(list=ls(all=T))
 gc()
 
-setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/data")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data")
 
 #################
 #Reading in data#
@@ -118,8 +118,8 @@ names(nonreg_benchmarks) = c("categories", "percent", "variable")
 
 names(nonreg_benchmarks_se) = c("categories", "percent", "variable")
 
-write.csv(nonreg_benchmarks, "/Users/Rebecca/Dropbox/NOPVO/current analysis/csv output/nonreg_benchmarks.csv")
-write.csv(nonreg_benchmarks_se, "/Users/Rebecca/Dropbox/NOPVO/current analysis/csv output/nonreg_benchmarks_se.csv")
+write.csv(nonreg_benchmarks, "/Users/Rebecca/Dropbox/research/NOPVO/analysis/csv output/nonreg_benchmarks.csv")
+write.csv(nonreg_benchmarks_se, "/Users/Rebecca/Dropbox/research/NOPVO/analysis/csv output/nonreg_benchmarks_se.csv")
 
 for (i in 1:length(nonreg_var_labels)){
 	assign(
@@ -178,7 +178,7 @@ names(cbs_n) = nonreg_var_labels
 #Writing out CSV files#
 #######################
 # 
-# setwd("/Users/Rebecca/Dropbox/NOPVO/current analysis/csv output")
+# setwd("/Users/Rebecca/research/Dropbox/NOPVO/analysis/csv output")
 # 
 # write.csv(ebb_reg_est, "ebb_reg_est.csv")
 # write.csv(ebb_reg_err, "ebb_reg_err.csv")
@@ -190,7 +190,7 @@ names(cbs_n) = nonreg_var_labels
 # 
 # write.csv(cbs_n, "cbs_n.csv")
 
-setwd("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/data")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data")
 rm(list=(setdiff(ls(), c(
   "nonreg_benchmarks", 
   "nonreg_benchmarks_est", 
@@ -204,4 +204,4 @@ rm(list=(setdiff(ls(), c(
   "ebb_reg_err",
   "cbs_n"))))
 
-save.image("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/CBS.RData")
+save.image("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/CBS.RData")

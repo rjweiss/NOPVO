@@ -8,7 +8,7 @@
 rm(list=ls(all=T))
 gc()
 
-setwd("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/data/")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
 #install packages if not already installed
 #install.packages(c("Hmisc", "gmodels", "gdata", "reshape"))
@@ -404,7 +404,7 @@ names(nopvo_nonregvars.se) = c(
 #WEIGHTED#
 ##########
 
-setwd("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/data/")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
 nopvo_reg_est_wtd = read.csv("nopvo_reg_est_wtd.csv", check.names=F)
 nopvo_reg_se_wtd = read.csv("nopvo_reg_se_wtd.csv", check.names=F)
@@ -508,4 +508,4 @@ rm(list = setdiff(ls(), c(
   "nonreg_var_labels"
 )))
 
-save.image("/Users/Rebecca/Dropbox/Research Projects/NOPVO/current analysis/scripts/NOPVO.RData")
+save.image("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/NOPVO.RData")
