@@ -3,12 +3,14 @@
 %\usepackage{fullpage, 
 %\usepackaage{setspace, graphicx}
 \usepackage[margin=0.5in,paperwidth=8.5in,paperheight=11in]{geometry}
+\usepackage{lscape}
 \usepackage{amsmath,amsthm,amssymb,amscd}
 \usepackage{dcolumn} %for apsrtable
 \usepackage{Sweave}
 \usepackage{array,rotating,booktabs,ctable}
 \usepackage{longtable}
 \usepackage{enumerate}
+\usepackage{fancyhdr}
 
 \begin{document}
 
@@ -16,7 +18,13 @@
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,strip.white=all}
 \SweaveOpts{prefix=TRUE,prefix.string=fig-,include=TRUE}
 
-\pagestyle{empty}
+\fancyhf{}
+\fancyhead[LO]{\iffloatpage{}{\nouppercase\rightmark}}
+\fancyhead[RE]{\iffloatpage{}{\nouppercase\leftmark}}
+\fancyhead[RO,LE]{\iffloatpage{}{\thepage}}
+\renewcommand{\headrulewidth}{\iffloatpage{0pt}{0.4pt}}
+\renewcommand{\footrulewidth}{0pt}
+\pagestyle{fancy}
 
 
 <<label = libraries, keep.source=FALSE, echo=FALSE, results=HIDE>>=
@@ -24,62 +32,44 @@
 #install.packages("Hmisc")
 library(tools)
 library(Hmisc)
-library(apsrtable)
-library(xtable)
 library(memisc)
+library(plyr)
 @
 
+\begin{landscape}
+\tiny
 
 <<label = regression, keep.source = TRUE, echo=FALSE, results=TEX>>=
-source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/regression.R")
-# apsrtable(model1, model2, model3, model4, model3_unres, model2_unres, model4_unres, model1_unres,
-# order=c("longest"),
-# coef.names=c(
-#   "(Intercept)",
-#   "Health",
-#   "Gender dummy",
-#   "Age category 2 dummy",
-#   "Age category 3 dummy",
-#   "Age category 4 dummy",
-#   "Age category 5 dummy",
-# "Bureau 2 dummy",
-# "Bureau 3 dummy",
-# "Bureau 4 dummy",
-# "Bureau 6 dummy",
-# "Bureau 7 dummy",
-# "Bureau 8 dummy",
-# "Bureau 9 dummy",
-# "Bureau 10 dummy",
-# "Bureau 11 dummy",
-# "Bureau 12 dummy",
-# "Bureau 13 dummy",
-# "Bureau 14 dummy",
-# "Bureau 15 dummy",
-# "Bureau 16 dummy",
-# "Bureau 17 dummy",
-# "Bureau 18 dummy",
-# "Bureau 20 dummy"),
-# Sweave=TRUE, 
-# float="longtable")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
+nopvo.spss <- spss.get("NOPVO_DATA_english.sav")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/output/")
+detach(package:Hmisc)
+library(car)
+
+nopvo.spss$HighestEducation = recode(nopvo.spss$HighestEducation, "'No education / primary school ' = 'Primary'")
+nopvo.spss$HighestEducation = recode(nopvo.spss$HighestEducation, "'lower vocational education' = 'Lower vocational'")
+nopvo.spss$HighestEducation = recode(nopvo.spss$HighestEducation, "'middle level secondary school' = 'Middle secondary'")
+nopvo.spss$HighestEducation = recode(nopvo.spss$HighestEducation, "'intermediate vocational education' = 'Middle vocational'")
+nopvo.spss$HighestEducation = recode(nopvo.spss$HighestEducation, "'highest level secondary school' = 'Highest secondary'")
+nopvo.spss$HighestEducation = recode(nopvo.spss$HighestEducation, "'higher vocational education' = 'Highest vocational'")
+nopvo.spss$HighestEducation = recode(nopvo.spss$HighestEducation, "'University education' = 'University'")
+nopvo.spss <- nopvo.spss[complete.cases(nopvo.spss$HighestEducation),]
+
+nopvo.spss$HighestEducation <- factor(nopvo.spss$HighestEducation)
+nopvo.spss$Age <- 2006 - as.numeric(nopvo.spss$Birthyear)
+nopvo.spss <- nopvo.spss[which(nopvo.spss$BureauID != 5),]
+
+education <- dlply(nopvo.spss, .(BureauID), lm, formula = Age ~ HighestEducation)
+output = do.call(mtable, education)
+toLatex(relabel(output,
+"HighestEducation: Highest vocational/Highest secondary" = "Highest vocational",     
+"HighestEducation: Lower vocational/Highest secondary"  = "Lower vocational",  
+"HighestEducation: Middle secondary/Highest secondary" = "Middle secondary",
+"HighestEducation: Middle vocational/Highest secondary" = "Middle vocational",
+"HighestEducation: Primary/Highest secondary" = "Primary",       
+"HighestEducation: University/Highest secondary" = "University",
+"HighestEducation: NA/Highest secondary" = "NA"))
 @
-
-<<label=model1, results=tex, echo=FALSE>>=
-apsrtable(model1)
-toLatex(mtable(model1, summary.stats = c("R-squared", "F", "N", "sigma")), useBooktabs=TRUE)
-@ 
-
-<<label=model2, results=tex, echo=FALSE>>=
-apsrtable(model2)
-@ 
-
-<<label=model3, results=tex, echo=FALSE>>=
-apsrtable(model3)
-@ 
-
-<<label=model4, results=tex, echo=FALSE>>=
-apsrtable(model4)
-@ 
-
-
+\end{landscape}
 
 \end{document}
