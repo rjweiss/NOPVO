@@ -1,270 +1,197 @@
-#NOPVO SCRIPT
-
-#########################################
-#Reading in data and getting n per panel#
-#########################################
-
 #change this to the director where the NOPVO .SAV file is located
 rm(list=ls(all=T))
 gc()
 
 setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
-#install packages if not already installed
-#install.packages(c("Hmisc", "gmodels", "gdata", "reshape"))
-
 #load the libraries
-
-
-#Reading in data using function "spss.get" from Hmisc
-#I use this instead of "read.spss" from the "foreign" library because spss.get returns a data.frame
-library(Hmisc)
-nopvo.spss <- spss.get("NOPVO_DATA_english.sav")
-detach(package:Hmisc, unload=TRUE)
 library(car)
+library(foreign)
+library(gmodels)
 
-nopvo_nonregvars_wtd.est = read.csv("nopvo_nonreg_est_wtd.csv")
-nopvo_nonregvars_wtd.se = read.csv("nopvo_nonreg_se_wtd.csv")
+#Reading in data using function "read.spss" from library foreign
+nopvo.spss <- read.spss("NOPVO_DATA_english.sav",
+                        use.value.labels=FALSE,
+                        to.data.frame=TRUE,
+                        trim.factor.names = TRUE, 
+                        reencode = NA, 
+                      )
+
+nopvo_regvars_wtd_est = read.csv("nopvo_reg_est_wtd.csv", check.names=F)
+nopvo_regvars_wtd_se = read.csv("nopvo_reg_se_wtd.csv", check.names=F)
+nopvo_nonregvars_wtd_est = read.csv("nopvo_nonreg_est_wtd.csv", check.names=F)
+nopvo_nonregvars_wtd_se = read.csv("nopvo_nonreg_se_wtd.csv", check.names=F)
+
 
 ##################
 #Variables to get#
 ##################
 
-#Age = 2006 - Birthyear
-#Gender = Gender
-#Region = NIELS5
-#Province = Province
-#Nationality = Q48
-#Origin of self = Q49.1
-#Origin of father = Q49.2
-#Origin of mother = Q49.3
-#Urbanization = Urbanization
-#Number of people in HH = people.in.household
-#Number of children in HH = children.in.household
-#Education = HighestEducation
-#Employment = Q1
-#Occupation = Q2
-#Transportation = maybe?
-#Religious status = Q22
-#Religion = Q23
-
-
 #Subset NOPVO data on these values because the data need to be in a smaller object
 reg_variables <- c(
-	"BureauID",
-	"Birthyear",
-	"Gender",
-	"NIELS5",
-	"Province",
-	"Q48",
-	"Q49.1",
-	"Q49.2",
-	"Q49.3",
-	#"Urbanization",
-	"people.in.household"
-)
+  "BureauID",
+  "Birthyear",
+  "Gender",
+  "NIELS5",
+  "Province",
+  "Q48",
+  "Q49_1",
+  "Q49_2",
+  "Q49_3",
+  "people_in_household"
+  )
 
 nonreg_variables <- c(
-	"HighestEducation",
-	"Q1",
-	#"Q2",
-	"Q18",
-	"Q19",
-	#"Q20",
-	#"Q21",
-	#"Q22",
-	"Q25",
-	"Q15",
-	"Q14",
-	"Q24"
-)
-reg_var_labels <- c(
-	"gender",
-	"region",
-	"province",
-	"nationality",
-	"originself",
-	"originfather",
-	"originmother",
-#	"urbanization",
-	"numpersonshh",
-	"agecats"
-)
+  "HighestEducation",
+  "Q1",
+  "Q18",
+  "Q19",
+  "Q25",
+  "Q15",
+  "Q24"
+  )
 
-nonreg_var_labels <- c(
-	"education",
-	"employment",
-	"religious_status",
-	"religion",
-	"move2years",
-	"health",
-	"lifesat",
-	"domicile"
-)
+regvar_labels <- c(
+  "birthyear",
+  "gender",
+  "region",
+  "province",
+  "nationality",
+  "originself",
+  "originfather",
+  "originmother",
+  "numpersonshh"
+  )
 
-####################
-#DATA PREPROCESSING#
-####################
+nonregvar_labels <- c(
+  "education",
+  "employment",
+  "religious_status",
+  "religion",
+  "move2years",
+  "health",
+  "domicile"
+  )
 
-
+#Subsetting to variables of interest
 nopvo <- subset(nopvo.spss, select = c(reg_variables, nonreg_variables))
-nopvo <- replace(nopvo, nopvo=="NA", 0)
-nopvo$Q48 <- recode(nopvo.spss$Q48, "'Both, Dutch and another nationality' = 'only Dutch'")
 
 #Removing bureau 5 because it is missing too many variables
 nopvo <- nopvo[which(nopvo$BureauID != 5),]
 
-#Create "age" groups, remove "BureauID" and "Birthyear" from the "variables" object
-nopvo$agecats <- cut(2006 - nopvo$Birthyear, c(17,24,34,44,54,66))
-reg_variables <- c(reg_variables, "agecats")
-reg_variables <- reg_variables[-1:-2]
 
-#Creating a list of all the cross tables for all variables of interest
-#This uses the CrossTable function from library "gmodels"
+#Create "age" groups
+nopvo$agecats <- cut(2006 - nopvo$Birthyear, c(17,24,34,44,54,66))
+
+names(nopvo) = c("BureauID", regvar_labels, nonregvar_labels, "agecats")
+
+regvar_labels = c(regvar_labels, "agecats")
+
+##########
+#Recoding#
+##########
+
+#some weird namespacing going on...manually specify car
+
+#gender
+nopvo$gender <- car::recode(nopvo$gender, "'1' = 'Male'; '2' = 'Female'", as.factor.result = TRUE)
+
+#region
+nopvo$region <- car::recode(nopvo$region, "'1' = '3 largest cities'; '2' = 'West';'3' = 'North'; '4' = 'East'; '5' = 'South'", as.factor.result = TRUE)
+
+#numpersonshh
+nopvo$numpersonshh <- car::recode(nopvo$numpersonshh, "'1' = 'One'; '2' = 'Two'; '3' = 'Three'; '4' = 'Four'; '5' = 'Five'; '6' = 'Six or more'; '99' = NA", as.factor.result = TRUE)
+
+#province
+nopvo$province = car::recode(nopvo$province, "'1' = 'Groningen';'2' = 'Friesland';'3' = 'Drenthe';'4' = 'Overijssel';'5' = 'Flevoland';'6' = 'Gelderland';'7' = 'Utrecht';'8' = 'Noord-Holland';'9' = 'Zuid-Holland';'10' = 'Zeeland';'11' = 'Noord-Brabant';'12' = 'Limburg';'99' = NA", as.factor.result = TRUE)
+
+#nationality
+nopvo$nationality <- car::recode(nopvo$nationality, "'1' = 'Dutch';'2' = 'not Dutch';'3' = 'Dutch'", as.factor.result = TRUE)
+
+#origins
+nopvo$originself <- car::recode(nopvo$originself, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles/Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
+nopvo$originfather <- car::recode(nopvo$originfather, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles/Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
+nopvo$originmother <- car::recode(nopvo$originmother, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles/Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
+
+#education
+nopvo$education = car::recode(nopvo$education, "'1' = 'Primary';'3' = 'Lower';'4' = 'Lower';'5' = 'Intermediate';'6' = 'Intermediate';'7' = 'Highest';'8' = 'Highest'; '99' = NA", as.factor.result = TRUE)
+
+#religion
+nopvo[which(nopvo$religious_status==2),]$religion = '0'
+nopvo$religious_status = NULL
+nopvo$religion = car::recode(nopvo$religion, "'0' = 'None';'1' = 'Roman Catholic';'2' = 'Dutch Reform or Protestant';'3' = 'Dutch Reform or Protestant';'4' = 'Other';'5' = 'Islamic';'6' = 'Other';'7' = 'Other';'8' = 'Other'", as.factor.result = TRUE)
+
+#remove religious status from labels
+nonregvar_labels = nonregvar_labels[-3]
+
+#domicile
+nopvo$domicile = car::recode(nopvo$domicile, "'1' = 'House';'2' = 'House';'3' = 'Apartment';'4' = 'Other';'5' = 'Dorm or Pension';'6' = 'Other';'7' = 'Misc'", as.factor.result = TRUE)
+
+#employment
+nopvo$employment = car::recode(nopvo$employment, "'1' = 'Fully employed';'2' = 'Housework';'3' = 'Unemployed';'4' = 'Incapacitated';'5' = 'Retired';'6' = 'Unemployed';'7' = 'Student';'8' = 'Other'", as.factor.result = TRUE)
+
+#health
+nopvo$health = car::recode(nopvo$health, "'1' = 'Very good';'2' = 'Good';'3' = 'Okay';'4' = 'Bad';'5' = 'Very bad'", as.factor.result = TRUE)
+
+#move2years
+nopvo$move2years = car::recode(nopvo$move2years, "'1' = 'Decided not to'; '2' = 'Maybe'; '3' = 'Definitely yes' ; '4' = 'I just moved'", as.factor.result = TRUE)
+
+# cat <- sapply(nopvo, is.factor)
+# nopvo[cat] <- lapply(nopvo[cat], factor)
+
+###############################################
+#Creating a data.frame for regression analysis#
+###############################################
+nopvo_lm <- nopvo
+nopvo_lm$age <- as.numeric(2006-nopvo_lm$birthyear)
+nopvo_lm$birthyear = NULL
+nopvo_lm$agecats = NULL
+
+#remove birthyear from analysis
+nopvo$birthyear = NULL
+regvar_labels = regvar_labels[-1]
+
+#######################################
+#Creating frequency tables data.frames#
+#######################################
+
 nopvo_reg.crosstables <- list(NA)
 nopvo_reg.n <- list(NA)
-for (i in 1:length(c(reg_variables))){
-	var = eval(parse(text = paste("nopvo$", reg_variables[i], sep = "")))
-	nopvo_reg.crosstables[[i]] <- CrossTable(
-		nopvo[!is.na(var),]$BureauID,
-		na.omit(var))
-	nopvo_reg.n[[i]] <- rowSums(nopvo_reg.crosstables[[i]]$t)
+for (i in 1:length(c(regvar_labels))){
+  var = eval(parse(text = paste("nopvo$", regvar_labels[i], sep = "")))
+  nopvo_reg.crosstables[[i]] <- CrossTable(
+    nopvo[!is.na(var),]$BureauID,
+    na.omit(var))
+  nopvo_reg.n[[i]] <- rowSums(nopvo_reg.crosstables[[i]]$t)
 }
+
+#some errors here, fix it
 
 nopvo_nonreg.crosstables <- list(NA)
 nopvo_nonreg.n <- list(NA)
-for (i in 1:length(c(nonreg_variables))){
-	var = eval(parse(text = paste("nopvo$", nonreg_variables[i], sep = "")))
-	nopvo_nonreg.crosstables[[i]] <- CrossTable(
-		nopvo[!is.na(var),]$BureauID,
-		na.omit(var))
-	nopvo_nonreg.n[[i]] <- rowSums(nopvo_nonreg.crosstables[[i]]$t)
+for (i in 1:length(c(nonregvar_labels))){
+  var = eval(parse(text = paste("nopvo$", nonregvar_labels[i], sep = "")))
+  nopvo_nonreg.crosstables[[i]] <- CrossTable(
+    nopvo[!is.na(var),]$BureauID,
+    na.omit(var))
+  nopvo_nonreg.n[[i]] <- rowSums(nopvo_nonreg.crosstables[[i]]$t)
 }
 
-#TODO: should probably test all NOPVO crosstables against the nopvo.n object
-#this is because companies are missing variables and it isn't immediately clear which ones are missing
-
 #Converting the proportional tables from the CrossTables objects into data frames
-nopvo_reg.prop_dfs <- list(NA)
-nopvo_reg.prop_dfs <- lapply(nopvo_reg.crosstables, function(x){
-	as.data.frame(rbind(x$prop.row[1:nrow(x$prop.row),]))
+nopvo_regvars_est <- list(NA)
+nopvo_regvars_est <- lapply(nopvo_reg.crosstables, function(x){
+  as.data.frame(rbind(x$prop.row[1:nrow(x$prop.row),]))
 })
 
-nopvo_nonreg.prop_dfs <- list(NA)
-nopvo_nonreg.prop_dfs <- lapply(nopvo_nonreg.crosstables, function(x){
-	as.data.frame(rbind(x$prop.row[1:nrow(x$prop.row),]))
+nopvo_nonregvars_est <- list(NA)
+nopvo_nonregvars_est <- lapply(nopvo_nonreg.crosstables, function(x){
+  as.data.frame(rbind(x$prop.row[1:nrow(x$prop.row),]))
 })
+
 
 #Labels each data.frame in the list accordingly
-names(nopvo_reg.prop_dfs) = reg_var_labels
-names(nopvo_nonreg.prop_dfs) = nonreg_var_labels
-
-###################################################################################
-#Collapsing categories to create comparable variables between benchmark and sample#
-###################################################################################
-
-#should redo this whole section with recode()
-
-#REGISTER VARIABLES
-
-#need to merge the origin "don't want to respond" with "others"
-#this is pretty hacky
-#Origin_of_self, Origin_of_father, Origin_of_mother
-nopvo_reg.prop_dfs$Origin_of_self[,7] = nopvo_reg.prop_dfs$Origin_of_self[,7] + nopvo_reg.prop_dfs$Origin_of_self[,8]
-nopvo_reg.prop_dfs$Origin_of_self = nopvo_reg.prop_dfs$Origin_of_self[,-8]
-nopvo_reg.prop_dfs$Origin_of_father[,7] = nopvo_reg.prop_dfs$Origin_of_father[,7] + nopvo_reg.prop_dfs$Origin_of_father[,8]
-nopvo_reg.prop_dfs$Origin_of_father = nopvo_reg.prop_dfs$Origin_of_father[,-8]
-nopvo_reg.prop_dfs$Origin_of_mother[,7] = nopvo_reg.prop_dfs$Origin_of_mother[,7] + nopvo_reg.prop_dfs$Origin_of_mother[,8]
-nopvo_reg.prop_dfs$Origin_of_mother = nopvo_reg.prop_dfs$Origin_of_mother[,-8]
-#nopvo_reg.prop_dfs$Nationality[,1] = nopvo_reg.prop_dfs$Nationality[,1] + nopvo_reg.prop_dfs$Nationality[,3]
-#nopvo_reg.prop_dfs$Nationality = nopvo_reg.prop_dfs$Nationality[,-3]
-#names(nopvo_reg.prop_dfs$Nationality) = c("Dutch", "non-Dutch")
-
-#NONREGISTER VARIABLES
-#TODO:
-
-#collapsing education
-#1) no education
-#2) lower vocation education/middle level secondary school
-#3) intermediate vocational education/highest level secondary school
-#4) higher vocational education/university education
-
-orig = nopvo_nonreg.prop_dfs$education
-first = orig[,1]
-second = orig[,2] + orig[,3]
-third = orig[,4] + orig[,5]
-fourth = orig[,6] + orig[,7]
-education = data.frame(first, second, third, fourth)
-rownames(education) = rownames(orig)
-
-nopvo_nonreg.prop_dfs$education = education
-
-rm(orig, first, second, third, fourth, education)
-
-#merging religious status with religion, collapsing religion
-#1) none
-#2) roman catholic
-#3) dutch reform / protestant
-#4) islamic
-#5) everything else
-
-yesno = nopvo_nonreg.prop_dfs$religious_status
-religion = nopvo_nonreg.prop_dfs$religion * yesno[,1]
-rc = religion[,1]
-prot_dr = religion[,2] + religion[,3]
-islam = religion[,5]
-rest = rowSums(religion[,6:8])
-none = yesno[,2]
-
-relig = data.frame(none, rc, prot_dr, islam, rest)
-rownames(relig) = rownames(religion)
-
-nopvo_nonreg.prop_dfs$religion = relig
-nopvo_nonreg.prop_dfs$religious_status = NULL
-nonreg_var_labels = nonreg_var_labels[-3]
-
-rm(yesno, religion, rc, prot_dr, islam, rest, none, relig)
-
-#collapsing domicile values
-
-domicile = nopvo_nonreg.prop_dfs$domicile
-#1 + 2
-#3
-#5
-#4 + 6 + 7
-
-one = domicile[,1] + domicile[,2]
-two = domicile[,3]
-three = domicile[,5]
-four = domicile[,4] + domicile[,6] + domicile[,7]
-dom = data.frame(one, two, three, four)
-rownames(dom) = rownames(domicile)
-nopvo_nonreg.prop_dfs$domicile = dom
-
-rm(domicile, one, two, three, four, dom)
-
-#collapsing employment
-#1
-#2
-#3+6
-#4
-#5
-#6
-#7
-
-employment = nopvo_nonreg.prop_dfs$employment
-a = employment[,1]
-b = employment[,2]
-c = employment[,3] + employment[,6]
-d = employment[,4]
-e = employment[,5]
-f = employment[,7]
-g = employment[,8]
-employ = data.frame(a, b, c, d, e, f, g)
-rownames(employ) = rownames(employment)
-nopvo_nonreg.prop_dfs$employment = employ
-
-rm(employment, a, b, c, d, e, f, g, employ)
+names(nopvo_regvars_est) = regvar_labels
+names(nopvo_nonregvars_est) = nonregvar_labels
 
 
 #####################################
@@ -273,239 +200,40 @@ rm(employment, a, b, c, d, e, f, g, employ)
 
 #REGISTER VARIABLES
 
-nopvo_reg.se_dfs <- nopvo_reg.prop_dfs
-for (n in 1:length(nopvo_reg.prop_dfs)) {
-	for (i in 1:length(nopvo_reg.prop_dfs[[n]])) {
-		for (j in 1:nrow(nopvo_reg.prop_dfs[[n]])) {
-			nopvo_reg.se_dfs[[n]][j, i] <- sqrt((nopvo_reg.prop_dfs[[n]][j,i] * (1 - nopvo_reg.prop_dfs[[n]][j,i])) / as.numeric(nopvo_reg.n[[n]][j]))
-		}
-	}
+nopvo_regvars_se <- nopvo_regvars_est
+for (n in 1:length(nopvo_regvars_est)) {
+  for (i in 1:length(nopvo_regvars_est[[n]])) {
+    for (j in 1:nrow(nopvo_regvars_est[[n]])) {
+      nopvo_regvars_se[[n]][j, i] <- sqrt((nopvo_regvars_est[[n]][j,i] * (1 - nopvo_regvars_est[[n]][j,i])) / as.numeric(nopvo_reg.n[[n]][j]))
+    }
+  }
 }
-names(nopvo_reg.se_dfs) = reg_var_labels	
+names(nopvo_regvars_se) = regvar_labels	
 
 #NONREGISTER VARIABLES
 
-nopvo_nonreg.se_dfs <- nopvo_nonreg.prop_dfs
-for (n in 1:length(nopvo_nonreg.prop_dfs)) {
-	for (i in 1:length(nopvo_nonreg.prop_dfs[[n]])) {
-		for (j in 1:nrow(nopvo_nonreg.prop_dfs[[n]])) {
-			nopvo_nonreg.se_dfs[[n]][j, i] <- sqrt((nopvo_nonreg.prop_dfs[[n]][j,i] * (1 - nopvo_nonreg.prop_dfs[[n]][j,i])) / as.numeric(nopvo_nonreg.n[[n]][j]))
-		}
-	}
+nopvo_nonregvars_se <- nopvo_nonregvars_est
+for (n in 1:length(nopvo_nonregvars_est)) {
+  for (i in 1:length(nopvo_nonregvars_est[[n]])) {
+    for (j in 1:nrow(nopvo_nonregvars_est[[n]])) {
+      nopvo_nonregvars_se[[n]][j, i] <- sqrt((nopvo_nonregvars_est[[n]][j,i] * (1 - nopvo_nonregvars_est[[n]][j,i])) / as.numeric(nopvo_nonreg.n[[n]][j]))
+    }
+  }
 }
-names(nopvo_nonreg.se_dfs) = nonreg_var_labels
+names(nopvo_nonregvars_se) = nonregvar_labels
 
-###############################################################
-#Comparing register NOPVO variables against GBA benchmark data#
-###############################################################
+#############################
+#Fixing weighted data.frames#
+#############################
 
-#TODO: replace these horrible manual list creations with loops
+nopvo_regvars_wtd_est <- melt(nopvo_regvars_wtd_est)
+nopvo_regvars_wtd_se <- melt(nopvo_regvars_wtd_se)
+nopvo_nonregvars_wtd_est <- melt(nopvo_nonregvars_wtd_est)
+nopvo_nonregvars_wtd_se <- melt(nopvo_nonregvars_wtd_se)
 
-#Creates an object for GBA benchmark comparisons
-#The order of the objects is important!
-nopvo_regvars.est = list(
-	nopvo_reg.prop_dfs$gender,
-	nopvo_reg.prop_dfs$nationality,
-	nopvo_reg.prop_dfs$originself,
-	nopvo_reg.prop_dfs$originmother,
-	nopvo_reg.prop_dfs$originfather,
-#	nopvo_reg.prop_dfs$urbanization,
-	nopvo_reg.prop_dfs$numpersonshh,
-	nopvo_reg.prop_dfs$age,
-	nopvo_reg.prop_dfs$region,
-	nopvo_reg.prop_dfs$province
-)
-
-nopvo_regvars.se = list(
-	nopvo_reg.se_dfs$gender,
-	nopvo_reg.se_dfs$nationality,
-	nopvo_reg.se_dfs$originself,
-	nopvo_reg.se_dfs$originmother,
-	nopvo_reg.se_dfs$originfather,
-#	nopvo_reg.se_dfs$urbanization,
-	nopvo_reg.se_dfs$numpersonshh,
-	nopvo_reg.se_dfs$age,
-	nopvo_reg.se_dfs$region,
-	nopvo_reg.se_dfs$province
-)
-
-names(nopvo_regvars.est) = c(
-	"gender",
-	"nationality",
-	"originself",
-	"originmother",
-	"originfather",
-#	"urbanization",
-	"numpersonshh",
-	"agecats",
-	"region",
-	"province")
-
-names(nopvo_regvars.se) = c(
-	"gender",
-	"nationality",
-	"originself",
-	"originmother",
-	"originfather",
-#	"urbanization",
-	"numpersonshh",
-	"agecats",
-	"region",
-	"province")
-
-#TODO: need to prune "nopvo.prop_dfs" according to the two methods
-#this is a bit tricky and will require more thinkin
-
-##################################################################
-#Comparing nonregister NOPVO variables against CBS benchmark data#
-##################################################################
-
-nopvo_nonregvars.est = list(
-	nopvo_nonreg.prop_dfs$education,
-	nopvo_nonreg.prop_dfs$employment,
-	nopvo_nonreg.prop_dfs$religion,
-	nopvo_nonreg.prop_dfs$move2years,
-	nopvo_nonreg.prop_dfs$health,
-	nopvo_nonreg.prop_dfs$lifesat,
-	nopvo_nonreg.prop_dfs$domicile
-)
-
-nopvo_nonregvars.se = list(
-	nopvo_nonreg.se_dfs$education,
-	nopvo_nonreg.se_dfs$employment,
-	nopvo_nonreg.se_dfs$religion,
-	nopvo_nonreg.se_dfs$move2years,
-	nopvo_nonreg.se_dfs$health,
-	nopvo_nonreg.se_dfs$lifesat,
-	nopvo_nonreg.se_dfs$domicile
-)
-
-names(nopvo_nonregvars.est) = c(
-	"education",
-	"employment",
-	"religion",
-	"move2years",
-	"health",
-	"lifesat",
-	"domicile"
-)
-
-names(nopvo_nonregvars.se) = c(
-	"education",
-	"employment",
-	"religion",
-	"move2years",
-	"health",
-	"lifesat",
-	"domicile"
-)
-
-##########
-#WEIGHTED#
-##########
-
-setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
-
-nopvo_reg_est_wtd = read.csv("nopvo_reg_est_wtd.csv", check.names=F)
-nopvo_reg_se_wtd = read.csv("nopvo_reg_se_wtd.csv", check.names=F)
-
-# reg_var_labels <- c(
-# 	"gender",
-# 	"nationality",
-# 	"originself",
-# 	"originmother",
-# 	"originfather",
-# 	#"urbanization",
-# 	"numpersonshh",
-# 	"agecats",
-# 	"region", #region normally
-# 	"province"
-# )
-
-#register variables
-
-for (i in 1:length(reg_var_labels)){
-	temp_var = paste("nopvo_",reg_var_labels[i],"_est_wtd",sep="")
-	temp_df = nopvo_reg_est_wtd[nopvo_reg_est_wtd$variable == reg_var_labels[i],]
-	temp_cats = temp_df$category
-	temp_df = t(temp_df[,2:19])
-	colnames(temp_df) = temp_cats
-	assign(temp_var, temp_df)
-}
-
-for (i in 1:length(reg_var_labels)){
-	temp_var = paste("nopvo_",reg_var_labels[i],"_se_wtd",sep="")
-	temp_df = nopvo_reg_se_wtd[nopvo_reg_se_wtd$variable == reg_var_labels[i],]
-	temp_cats = temp_df$category
-	temp_df = t(temp_df[,2:19])
-	#temp_df = factor(temp_df)
-	colnames(temp_df) = temp_cats
-	assign(temp_var, temp_df)
-}
-
-nopvo_regvars_wtd.est = list(NA)
-for (i in 1:length(reg_var_labels)){
-	nopvo_regvars_wtd.est[[i]] = as.data.frame(eval(parse(text = paste("nopvo_",reg_var_labels[i],"_est_wtd",sep=""))))
-  names(nopvo_regvars_wtd.est)[[i]] = reg_var_labels[i]
-}
-
-nopvo_regvars_wtd.se = list(NA)
-for (i in 1:length(reg_var_labels)){
-	nopvo_regvars_wtd.se[[i]] = as.data.frame(eval(parse(text = paste("nopvo_",reg_var_labels[i],"_se_wtd",sep=""))))
-	names(nopvo_regvars_wtd.se)[[i]] = reg_var_labels[i]
-}
-
-
-#nonregister variables
-
-nopvo_nonreg_est_wtd = read.csv("nopvo_nonreg_est_wtd.csv", check.names=F)
-nopvo_nonreg_se_wtd = read.csv("nopvo_nonreg_se_wtd.csv", check.names=F)
-
-for (i in 1:length(nonreg_var_labels)){
-	temp_var = paste("nopvo_",nonreg_var_labels[i],"_est_wtd",sep="")
-	temp_df = nopvo_nonreg_est_wtd[nopvo_nonreg_est_wtd$variable == nonreg_var_labels[i],]
-	temp_cats = temp_df$category
-	temp_df = as.data.frame(t(temp_df[,2:19]))
-	colnames(temp_df) = temp_cats
-	assign(temp_var, temp_df)
-}
-
-for (i in 1:length(nonreg_var_labels)){
-	temp_var = paste("nopvo_",nonreg_var_labels[i],"_se_wtd",sep="")
-	temp_df = nopvo_nonreg_se_wtd[nopvo_nonreg_se_wtd$variable == nonreg_var_labels[i],]
-	temp_cats = temp_df$category
-	temp_df = as.data.frame(t(temp_df[,2:19]))
-	#temp_df = factor(temp_df)
-	colnames(temp_df) = temp_cats
-	assign(temp_var, temp_df)
-}
-
-nopvo_nonregvars_wtd.est = list(NA)
-for (i in 1:length(nonreg_var_labels)){
-	nopvo_nonregvars_wtd.est[[i]] = eval(parse(text = paste("nopvo_",nonreg_var_labels[i],"_est_wtd",sep="")))
-	names(nopvo_nonregvars_wtd.est)[[i]] = nonreg_var_labels[i]
-	
-}
-
-nopvo_nonregvars_wtd.se = list(NA)
-for (i in 1:length(nonreg_var_labels)){
-	nopvo_nonregvars_wtd.se[[i]] = eval(parse(text = paste("nopvo_",nonreg_var_labels[i],"_se_wtd",sep="")))
-	names(nopvo_nonregvars_wtd.est)[[i]] = nonreg_var_labels[i]	
-}
-
-names(nopvo_nonregvars_wtd.se) = names(nopvo_nonregvars_wtd.est)
-
-rm(list = setdiff(ls(), c(
-	"nopvo_regvars.est",
-	"nopvo_regvars_wtd.est",
-	"nopvo_regvars.se",
-	"nopvo_regvars_wtd.se",
-	"nopvo_nonregvars.est",
-	"nopvo_nonregvars_wtd.est",
-	"nopvo_nonregvars.se",
-	"nopvo_nonregvars_wtd.se",
-  "reg_var_labels",
-  "nonreg_var_labels"
-)))
+names(nopvo_regvars_wtd_est) = c("category", "variable", "bureau", "value")
+names(nopvo_regvars_wtd_se) = c("category", "variable", "bureau", "value")
+names(nopvo_nonregvars_wtd_est) = c("category", "variable", "bureau", "value")
+names(nopvo_nonregvars_wtd_se) = c("category", "variable", "bureau", "value")
 
 save.image("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/NOPVO.RData")

@@ -1,338 +1,127 @@
-rm(list=ls(all=T))
-gc()
+library(tools)
+library(memisc)
+library(plyr)
 
-library(Hmisc)
+load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/NOPVO.RData")
 
-nopvo <- spss.get("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/merged.sav")
+# regvars <- as.array(regvar_labels)
+# regvars <- regvars[-9]
+# nonregvars <- as.array(nonregvar_labels)
+#
+# TODO: return to this!
+# test = alply(regvars, 1, function(arr){
+#   dlply(nopvo_lm, .(BureauID), lm, formula = age ~ eval(parse(text=paste("nopvo$", arr, sep=""))))
+# })
 
-#unweighted
+gender <- dlply(nopvo_lm[complete.cases(nopvo_lm$gender),], .(BureauID), lm, formula = age ~ gender)
+region <- dlply(nopvo_lm[complete.cases(nopvo_lm$region),], .(BureauID), lm, formula = age ~ region)
+#province <- dlply(nopvo_lm[complete.cases(nopvo_lm$province),], .(BureauID), lm, formula = age ~ province)
+#nationality <- dlply(nopvo_lm[complete.cases(nopvo_lm$nationality),], .(BureauID), lm, formula = age ~ nationality)
+originself <- dlply(nopvo_lm[complete.cases(nopvo_lm$originself),], .(BureauID), lm, formula = age ~ originself)
+originfather <- dlply(nopvo_lm[complete.cases(nopvo_lm$originfather),], .(BureauID), lm, formula = age ~ originfather)
+originmother <- dlply(nopvo_lm[complete.cases(nopvo_lm$originmother),], .(BureauID), lm, formula = age ~ originmother)
+#numpersonshh <- dlply(nopvo_lm[complete.cases(nopvo_lm$numpersonshh),], .(BureauID), lm, formula = age ~ numpersonshh)
+education <- dlply(nopvo_lm[complete.cases(nopvo_lm$education),], .(BureauID), lm, formula = age ~ education)
+employment <- dlply(nopvo_lm[complete.cases(nopvo_lm$employment),], .(BureauID), lm, formula = age ~ employment)
+religion <- dlply(nopvo_lm[complete.cases(nopvo_lm$religion),], .(BureauID), lm, formula = age ~ religion)
+move2years <- dlply(nopvo_lm[complete.cases(nopvo_lm$move2years),], .(BureauID), lm, formula = age ~ move2years)
+health <- dlply(nopvo_lm[complete.cases(nopvo_lm$health),], .(BureauID), lm, formula = age ~ health)
+domicile <- dlply(nopvo_lm[complete.cases(nopvo_lm$domicile),], .(BureauID), lm, formula = age ~ domicile)
 
-model1 <- lm(data = nopvo, Q14 ~ 
-  Q15 +
-  I(Geslachtmanvrouw==2) + 
-  I(agegroupn1n2n3n4n5==2) +
-  I(agegroupn1n2n3n4n5==3) +
-  I(agegroupn1n2n3n4n5==4) +
-  I(agegroupn1n2n3n4n5==5) 
-  )
+gender_output = do.call(mtable, c(gender, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
-model1_unres <- lm(data = nopvo, Q14 ~ 
-  Q15 +
-  I(Geslachtmanvrouw==2) + 
-  I(agegroupn1n2n3n4n5==2) +
-  I(agegroupn1n2n3n4n5==3) +
-  I(agegroupn1n2n3n4n5==4) +
-  I(agegroupn1n2n3n4n5==5) +
-  I(panelID == 2) +
-  I(panelID == 3) +
-  I(panelID == 4) +
-  I(panelID == 6) +
-  I(panelID == 7) +
-  I(panelID == 8) +
-  I(panelID == 9) +
-  I(panelID == 10) +
-  I(panelID == 11) +
-  I(panelID == 12) +
-  I(panelID == 13) +
-  I(panelID == 14) +
-  I(panelID == 15) +
-  I(panelID == 16) +
-  I(panelID == 17) +
-  I(panelID == 18) +
-  I(panelID == 20) +
-  I(Q15) * I(panelID == 2) +
-  I(Q15) * I(panelID == 3) +
-  I(Q15) * I(panelID == 4) +
-  I(Q15) * I(panelID == 6) +
-  I(Q15) * I(panelID == 7) +
-  I(Q15) * I(panelID == 8) +
-  I(Q15) * I(panelID == 9) +
-  I(Q15) * I(panelID == 10) +
-  I(Q15) * I(panelID == 11) +
-  I(Q15) * I(panelID == 12) +
-  I(Q15) * I(panelID == 13) +
-  I(Q15) * I(panelID == 14) +
-  I(Q15) * I(panelID == 15) +
-  I(Q15) * I(panelID == 16) +
-  I(Q15) * I(panelID == 17) +
-  I(Q15) * I(panelID == 18) +
-  I(Q15) * I(panelID == 20) + 
-  I(Geslachtmanvrouw==2) * I(panelID == 2) +
-  I(Geslachtmanvrouw==2) * I(panelID == 3) +
-  I(Geslachtmanvrouw==2) * I(panelID == 4) +
-  I(Geslachtmanvrouw==2) * I(panelID == 6) +
-  I(Geslachtmanvrouw==2) * I(panelID == 7) +
-  I(Geslachtmanvrouw==2) * I(panelID == 8) +
-  I(Geslachtmanvrouw==2) * I(panelID == 9) +
-  I(Geslachtmanvrouw==2) * I(panelID == 10) +
-  I(Geslachtmanvrouw==2) * I(panelID == 11) +
-  I(Geslachtmanvrouw==2) * I(panelID == 12) +
-  I(Geslachtmanvrouw==2) * I(panelID == 13) +
-  I(Geslachtmanvrouw==2) * I(panelID == 14) +
-  I(Geslachtmanvrouw==2) * I(panelID == 15) +
-  I(Geslachtmanvrouw==2) * I(panelID == 16) +
-  I(Geslachtmanvrouw==2) * I(panelID == 17) +
-  I(Geslachtmanvrouw==2) * I(panelID == 18) +
-  I(Geslachtmanvrouw==2) * I(panelID == 20) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 2) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 3) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 4) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 6) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 7) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 8) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 9) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 10) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 11) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 12) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 13) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 14) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 15) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 16) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 17) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 18) +
-  I(agegroupn1n2n3n4n5==2) * I(panelID == 20) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 2) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 3) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 4) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 6) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 7) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 8) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 9) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 10) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 11) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 12) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 13) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 14) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 15) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 16) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 17) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 18) +
-  I(agegroupn1n2n3n4n5==3) * I(panelID == 20) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 2) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 3) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 4) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 6) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 7) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 8) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 9) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 10) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 11) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 12) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 13) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 14) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 15) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 16) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 17) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 18) +
-  I(agegroupn1n2n3n4n5==4) * I(panelID == 20) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 2) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 3) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 4) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 6) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 7) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 8) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 9) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 10) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 11) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 12) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 13) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 14) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 15) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 16) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 17) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 18) +
-  I(agegroupn1n2n3n4n5==5) * I(panelID == 20) 
-  )
+region_output = do.call(mtable, c(region, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
-model2 <- lm(data = nopvo, Q14 ~ Q15)
-model2_unres <- lm(data = nopvo, Q14 ~ 
-  Q15 +
-  I(Geslachtmanvrouw==2) + 
-  I(agegroupn1n2n3n4n5==2) +
-  I(agegroupn1n2n3n4n5==3) +
-  I(agegroupn1n2n3n4n5==4) +
-  I(agegroupn1n2n3n4n5==5) +
-  I(panelID == 2) +
-  I(panelID == 3) +
-  I(panelID == 4) +
-  I(panelID == 6) +
-  I(panelID == 7) +
-  I(panelID == 8) +
-  I(panelID == 9) +
-  I(panelID == 10) +
-  I(panelID == 11) +
-  I(panelID == 12) +
-  I(panelID == 13) +
-  I(panelID == 14) +
-  I(panelID == 15) +
-  I(panelID == 16) +
-  I(panelID == 17) +
-  I(panelID == 18) +
-  I(panelID == 20) +
-  I(Q15) * I(panelID == 2) +
-  I(Q15) * I(panelID == 3) +
-  I(Q15) * I(panelID == 4) +
-  I(Q15) * I(panelID == 6) +
-  I(Q15) * I(panelID == 7) +
-  I(Q15) * I(panelID == 8) +
-  I(Q15) * I(panelID == 9) +
-  I(Q15) * I(panelID == 10) +
-  I(Q15) * I(panelID == 11) +
-  I(Q15) * I(panelID == 12) +
-  I(Q15) * I(panelID == 13) +
-  I(Q15) * I(panelID == 14) +
-  I(Q15) * I(panelID == 15) +
-  I(Q15) * I(panelID == 16) +
-  I(Q15) * I(panelID == 17) +
-  I(Q15) * I(panelID == 18) +
-  I(Q15) * I(panelID == 20) 
-)
+originself_output = do.call(mtable, c(originself, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
-model3 <- lm(data=nopvo, Q14 ~ I(Geslachtmanvrouw==2))
-model3_unres <- model1_unres <- lm(data = nopvo, Q14 ~ 
-  Q15 +
-  I(Geslachtmanvrouw==2) + 
-  I(agegroupn1n2n3n4n5==2) +
-  I(agegroupn1n2n3n4n5==3) +
-  I(agegroupn1n2n3n4n5==4) +
-  I(agegroupn1n2n3n4n5==5) +
-  I(panelID == 2) +
-  I(panelID == 3) +
-  I(panelID == 4) +
-  I(panelID == 6) +
-  I(panelID == 7) +
-  I(panelID == 8) +
-  I(panelID == 9) +
-  I(panelID == 10) +
-  I(panelID == 11) +
-  I(panelID == 12) +
-  I(panelID == 13) +
-  I(panelID == 14) +
-  I(panelID == 15) +
-  I(panelID == 16) +
-  I(panelID == 17) +
-  I(panelID == 18) +
-  I(panelID == 20) +
-  I(Geslachtmanvrouw==2) * I(panelID == 2) +
-  I(Geslachtmanvrouw==2) * I(panelID == 3) +
-  I(Geslachtmanvrouw==2) * I(panelID == 4) +
-  I(Geslachtmanvrouw==2) * I(panelID == 6) +
-  I(Geslachtmanvrouw==2) * I(panelID == 7) +
-  I(Geslachtmanvrouw==2) * I(panelID == 8) +
-  I(Geslachtmanvrouw==2) * I(panelID == 9) +
-  I(Geslachtmanvrouw==2) * I(panelID == 10) +
-  I(Geslachtmanvrouw==2) * I(panelID == 11) +
-  I(Geslachtmanvrouw==2) * I(panelID == 12) +
-  I(Geslachtmanvrouw==2) * I(panelID == 13) +
-  I(Geslachtmanvrouw==2) * I(panelID == 14) +
-  I(Geslachtmanvrouw==2) * I(panelID == 15) +
-  I(Geslachtmanvrouw==2) * I(panelID == 16) +
-  I(Geslachtmanvrouw==2) * I(panelID == 17) +
-  I(Geslachtmanvrouw==2) * I(panelID == 18) +
-  I(Geslachtmanvrouw==2) * I(panelID == 20)
-)
+originfather_output = do.call(mtable, c(originfather, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
-model4 <-
-model4_unres <- model1_unres <- lm(data = nopvo, Q14 ~ 
-Q15 +
-I(Geslachtmanvrouw==2) + 
-I(agegroupn1n2n3n4n5==2) +
-I(agegroupn1n2n3n4n5==3) +
-I(agegroupn1n2n3n4n5==4) +
-I(agegroupn1n2n3n4n5==5) +
-I(panelID == 2) +
-I(panelID == 3) +
-I(panelID == 4) +
-I(panelID == 6) +
-I(panelID == 7) +
-I(panelID == 8) +
-I(panelID == 9) +
-I(panelID == 10) +
-I(panelID == 11) +
-I(panelID == 12) +
-I(panelID == 13) +
-I(panelID == 14) +
-I(panelID == 15) +
-I(panelID == 16) +
-I(panelID == 17) +
-I(panelID == 18) +
-I(panelID == 20) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 2) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 3) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 4) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 6) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 7) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 8) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 9) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 10) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 11) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 12) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 13) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 14) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 15) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 16) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 17) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 18) +
-I(agegroupn1n2n3n4n5==2) * I(panelID == 20) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 2) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 3) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 4) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 6) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 7) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 8) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 9) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 10) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 11) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 12) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 13) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 14) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 15) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 16) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 17) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 18) +
-I(agegroupn1n2n3n4n5==3) * I(panelID == 20) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 2) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 3) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 4) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 6) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 7) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 8) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 9) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 10) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 11) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 12) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 13) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 14) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 15) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 16) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 17) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 18) +
-I(agegroupn1n2n3n4n5==4) * I(panelID == 20) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 2) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 3) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 4) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 6) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 7) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 8) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 9) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 10) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 11) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 12) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 13) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 14) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 15) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 16) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 17) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 18) +
-I(agegroupn1n2n3n4n5==5) * I(panelID == 20) 
-)
+originmother_output = do.call(mtable, c(originmother, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
-mtable1 <- mtable(model1, model2, model3, model4, model1_unres, model2_unres, model3_unres, model4_unres)
+education_output = do.call(mtable, c(education, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
-output <- "mtable.csv"
-write.csv(write.mtable(mtable1, file=output))
-#file.show(output)
+employment_output = do.call(mtable, c(employment, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
-anova(model1, model1_unres)
-#returns F of 1.7174
+religion_output = do.call(mtable, c(religion, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
 
+move2years_output = do.call(mtable, c(move2years, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
+
+health_output = do.call(mtable, c(health, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
+
+domicile_output = do.call(mtable, c(domicile, list(
+  summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+  )))
+
+
+# test = do.call(mtable, c(gender, region, originself, originfather, originmother, employment, education, religion, move2years, health, domicile, list(
+#   summary.stats=c("R-squared", "adj. R-squared", "sigma", "F", "N")
+#   )))
+
+gender_output = relabel(gender_output,
+                        "(Intercept)" = "(Intercept)",
+                        "gender: Male/Female" = "Male")
+
+region_output = relabel(region_output,
+                        "(Intercept)" = "(Intercept)",
+                        "region: East/3 largest cities" = "East",
+                        "region: North/3 largest cities" = "North",
+                        "region: South/3 largest cities" = "South",
+                        "region: West/3 largest cities" = "West")
+
+employment_output = relabel(employment_output,
+                            "employment: Housework/Fully employed" = "Housework",
+                            "employment: Incapacitated/Fully employed" = "Incapacitated",
+                            "employment: Other/Fully employed" = "Other",
+                            "employment: Retired/Fully employed" = "Retired",
+                            "employment: Student/Fully employed" = "Student",
+                            "employment: Unemployed/Fully employed" = "Unemployed")
+
+education_output = relabel(education_output,
+                           "(Intercept)" = "(Intercept)",
+                           "education: Intermediate/Highest" = "Intermediate",
+                           "education: Lower/Highest" = "Lower",
+                           "education: Primary/Highest" = "Primary")
+
+religion_output = relabel(religion_output,
+                          "(Intercept)" = "(Intercept)",
+                          "religion: Islamic/Dutch Reform or Protestant" = "Islamic",
+                          "religion: None/Dutch Reform or Protestant" = "None",
+                          "religion: Other/Dutch Reform or Protestant" = "Other",
+                          "religion: Roman Catholic/Dutch Reform or Protestant" = "Roman Catholic")
+
+health_output = relabel(health_output,
+                       "(Intercept)" = "(Intercept)",
+                       "health: Good/Bad" = "Good",
+                       "health: Okay/Bad" = "Okay",
+                       "health: Very bad/Bad" = "Very bad",
+                       "health: Very good/Bad" = "Very good")
+
+
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/output/regression")
+
+write.mtable(gender_output, file="gender_output.csv")
+write.mtable(region_output, file="region_output.csv")
+write.mtable(employment_output, file="employment_output.csv")
+write.mtable(education_output, file="education_output.csv")
+write.mtable(religion_output, file="religion_output.csv")
+write.mtable(health_output, file="health_output.csv")

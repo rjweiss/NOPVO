@@ -4,8 +4,8 @@ setwd("C:/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
 library(Hmisc)
 
-liss = spss.get("LISS_DATA.sav")
-liss_etc = spss.get("reg_prov_apr2008.sav")
+liss = spss.get("LISS_DATA.sav")#, use.value.labels=TRUE)
+liss_etc = spss.get("reg_prov_apr2008.sav")#, use.value.labels=TRUE))
 liss_etc = liss_etc[liss_etc$doetmee == "yes",]
 
 detach(package:Hmisc, unload=TRUE)
@@ -31,21 +31,23 @@ liss = liss[complete.cases(liss$geslacht),]
 liss = liss[complete.cases(liss$cr08a043),]
 
 #recoding categories in variables to match benchmarks
+#this is kind of ridiculous, fix these recodes
 liss$cr08a054 = recode(liss$cr08a054, "NA = liss$cr08a053") #this will throw errors
 liss$cr08a058 = recode(liss$cr08a058, "NA = liss$cr08a057")#this will throw errors
 liss$cr08a061 = recode(liss$cr08a061, "NA = liss$cr08a060")#this will throw errors
+
 liss$cr08a054 = recode(liss$cr08a054, "1 = 'Netherlands'")
 liss$cr08a054 = recode(liss$cr08a054, "'Surinam' = 'Suriname'")
-liss$cr08a054 = recode(liss$cr08a054, "'Dutch Antilles' = 'Antilles and Aruba'")
-liss$cr08a054 = recode(liss$cr08a054, "'Turkey' = 'Turkye'")
+liss$cr08a054 = recode(liss$cr08a054, "'Dutch Antilles' = 'Antilles/Aruba'")
+#liss$cr08a054 = recode(liss$cr08a054, "'Turkey' = 'Turkye'")
 liss$cr08a054 = recode(liss$cr08a054, "2 = 'Other'")
 liss = sqldf(c("update liss set cr08a054 = 'Other' where cr08a054 = 'other non-western country (Africa, Latin America, Asia other than [in wave 1: Indonesia and] Japan)'", "select * from liss"))
 liss = sqldf(c("update liss set cr08a054 = 'Other' where cr08a054 = 'other western country (Europe, North America, [in wave 1: Indonesia,] Japan, Oceania)'", "select * from liss"))
 liss$cr08a054 = factor(liss$cr08a054)
 liss$cr08a058 = recode(liss$cr08a058, "1 = 'Netherlands'")
 liss$cr08a058 = recode(liss$cr08a058, "'Surinam' = 'Suriname'")
-liss$cr08a058 = recode(liss$cr08a058, "'Dutch Antilles' = 'Antilles and Aruba'")
-liss$cr08a058 = recode(liss$cr08a058, "'Turkey' = 'Turkye'")
+liss$cr08a058 = recode(liss$cr08a058, "'Dutch Antilles' = 'Antilles/Aruba'")
+#liss$cr08a058 = recode(liss$cr08a058, "'Turkey' = 'Turkye'")
 liss$cr08a058 = recode(liss$cr08a058, "2 = 'Other'")
 liss$cr08a058 = recode(liss$cr08a058, "3 = 'Other'")
 liss = sqldf(c("update liss set cr08a058 = 'Other' where cr08a058 = 'I don''t know'", "select * from liss"))
