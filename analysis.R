@@ -8,7 +8,6 @@ gc()
 
 #TODO: Fix all of the sqldf calls to refer to the right data.frame dimensions (this is because nopvo_script.R renamed all of the dimensions)
 #TODO: Fix the mahalanobis distance function to account for CBS standard errors
-#TODO: Move all table generation code to tables.R
 #TODO: Write ttest.R
 
 # install.packages("Hmisc")
@@ -32,9 +31,11 @@ library(descr)
 library(sqldf)
 library(plyr)
 library(reshape2)
+library(memisc)
+
 
 setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
-source("preprocessing.R")
+source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/preprocessing.R")
 
 star = function(x){
   as.character(symnum(x, corr=FALSE,
@@ -46,33 +47,26 @@ star = function(x){
 #Getting estimate errors in data.frames#
 ########################################
 
-#Register Variables
+#Register
 
 #unweighted
-nopvo_regvars_err <- sqldf("select nre._id, nre._bureau, nre.variable, nre.value, nre.value-rb.value as adjusted, abs(nre.value-rb.value) as abs_adjusted FROM nopvo_regvars_est nre, reg_benchmarks rb where nre._id = rb._id and nre.variable = rb._categories")
-colnames(nopvo_regvars_err) <- c(".id", ".bureau", "variable", "value", "adjusted", "abs_adjusted")
-nopvo_regvars_err <- sqldf("select err._id, err._bureau, err.variable, err.value, err.adjusted, err.abs_adjusted, se.value as se from nopvo_regvars_err err join nopvo_regvars_se se on err._id=se._id and err._bureau=se._bureau and err.variable = se.variable")
-names(nopvo_regvars_err)[1:2] = names(nopvo_regvars_est)[1:2]
+nopvo_regvars_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.value as err, abs(nre.value-rb.value) as abs_err FROM nopvo_regvars_est nre, reg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
+nopvo_regvars_err <- sqldf("select err.variable, err.bureau, err.category, err.est, err.err, err.abs_err, se.value as se from nopvo_regvars_err err join nopvo_regvars_se se on err.variable=se.variable and err.bureau=se.bureau and err.category = se.category")
 
 #weighted
-nopvo_regvars_wtd_err <- sqldf("select nre._id, nre._bureau, nre.variable, nre.value, nre.value-rb.value as adjusted, abs(nre.value-rb.value) as abs_adjusted from nopvo_regvars_wtd_est nre, reg_benchmarks rb where nre._id = rb._id and nre.variable = rb._categories")
-colnames(nopvo_regvars_wtd_err) <- c(".id", ".bureau", "variable", "value", "adjusted", "abs_adjusted")
-nopvo_regvars_wtd_err <- sqldf("select err._id, err._bureau, err.variable, err.value, err.adjusted, err.abs_adjusted, se.value as se from nopvo_regvars_wtd_err err join nopvo_regvars_wtd_se se on err._id=se._id and err._bureau=se._bureau and err.variable = se.variable")
-names(nopvo_regvars_wtd_err)[1:2] = names(nopvo_regvars_wtd_est)[1:2]
+nopvo_regvars_wtd_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.value as err, abs(nre.value-rb.value) as abs_err FROM nopvo_regvars_wtd_est nre, reg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
+nopvo_regvars_wtd_err <- sqldf("select err.variable, err.bureau, err.category, err.est, err.err, err.abs_err, se.value as se from nopvo_regvars_wtd_err err join nopvo_regvars_wtd_se se on err.variable=se.variable and err.bureau=se.bureau and err.category = se.category")
 
-#Nonregister variables
+#Nonregister
+#TODO: recode nonregister benchmark categories (this must be done in preprocessing.R)
 
 #unweighted
-nopvo_nonregvars_err <- sqldf("select nre._id, nre._bureau, nre.variable, nre.value, nre.value-rb.value as adjusted, abs(nre.value-rb.value) as abs_adjusted from nopvo_nonregvars_est nre, nonreg_benchmarks rb where nre._id = rb.id and nre.variable = rb.categories")
-colnames(nopvo_nonregvars_err) <- c(".id", ".bureau", "variable", "value", "adjusted", "abs_adjusted")
-nopvo_nonregvars_err <- sqldf("select err._id, err._bureau, err.variable, err.value, err.adjusted, err.abs_adjusted, se.value as se from nopvo_nonregvars_err err join nopvo_nonregvars_se se on err._id=se._id and err._bureau=se._bureau and err.variable = se.variable")
-names(nopvo_nonregvars_err)[1:2] = names(nopvo_nonregvars_est)[1:2]
+nopvo_nonregvars_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.value as err, abs(nre.value-rb.value) as abs_err FROM nopvo_nonregvars_est nre, nonreg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
+nopvo_nonregvars_err <- sqldf("select err.variable, err.bureau, err.category, err.est, err.err, err.abs_err, se.value as se from nopvo_nonregvars_err err join nopvo_nonregvars_se se on err.variable=se.variable and err.bureau=se.bureau and err.category = se.category")
 
 #weighted
-nopvo_nonregvars_wtd_err <- sqldf("select nre._id, nre._bureau, nre.variable, nre.value, nre.value-rb.value as adjusted, abs(nre.value-rb.value) as abs_adjusted from nopvo_nonregvars_wtd_est nre, nonreg_benchmarks rb where nre._id = rb.id and nre.variable = rb.categories")
-colnames(nopvo_nonregvars_wtd_err) <- c(".id", ".bureau", "variable", "value", "adjusted", "abs_adjusted")
-nopvo_nonregvars_wtd_err <- sqldf("select err._id, err._bureau, err.variable, err.value, err.adjusted, err.abs_adjusted, se.value as se from nopvo_nonregvars_wtd_err err join nopvo_nonregvars_wtd_se se on err._id=se._id and err._bureau=se._bureau and err.variable = se.variable")
-names(nopvo_nonregvars_wtd_err)[1:2] = names(nopvo_nonregvars_wtd_est)[1:2]
+nopvo_nonregvars_wtd_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.value as err, abs(nre.value-rb.value) as abs_err FROM nopvo_nonregvars_wtd_est nre, nonreg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
+nopvo_nonregvars_wtd_err <- sqldf("select err.variable, err.bureau, err.category, err.est, err.err, err.abs_err, se.value as se from nopvo_nonregvars_wtd_err err join nopvo_nonregvars_wtd_se se on err.variable=se.variable and err.bureau=se.bureau and err.category = se.category")
 
 #get nopvo bureau n
 nopvo_n = read.csv("/Users/Rebecca/Dropbox/research/NOPVO/analysis/csv output/nopvo_n.csv")
@@ -85,3 +79,9 @@ source('ttests.R')
 
 #Mahalanobis distances
 source('mahalanobis.R')
+
+#Creating tables
+source('tables.R')
+
+#Creating plots
+source('plots.R')
