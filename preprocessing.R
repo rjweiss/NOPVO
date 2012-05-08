@@ -1,6 +1,8 @@
 rm(list=ls(all=T))
 gc()
 
+#TODO: Fix the 
+
 #source scripts
 #source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/nopvo_script.R")
 #source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/cbs_script.R")
@@ -13,7 +15,7 @@ load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/CBS.RData")
 load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/LISS.RData")
 load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/NOPVO.RData")
 
-#helper functions
+#functions
 reformat <- function(l, benchmarks=F){
   if(benchmarks){
     ld = ldply(l, function(df){df$.categories = rownames(df); melt(df)})

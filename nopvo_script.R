@@ -1,7 +1,12 @@
-#change this to the director where the NOPVO .SAV file is located
+#######################################
+#NOPVO Script                         #
+#Creates estimates and standard errors#
+#######################################
+
 rm(list=ls(all=T))
 gc()
 
+#change to the directory where the NOPVO .SAV file is located
 setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
 #load the libraries
@@ -17,6 +22,7 @@ nopvo.spss <- read.spss("NOPVO_DATA_english.sav",
                         reencode = NA, 
                       )
 
+#Reading in the weighted data given to me by Sanne
 nopvo_regvars_wtd_est = read.csv("nopvo_reg_est_wtd.csv", check.names=F)
 nopvo_regvars_wtd_se = read.csv("nopvo_reg_se_wtd.csv", check.names=F)
 nopvo_nonregvars_wtd_est = read.csv("nopvo_nonreg_est_wtd.csv", check.names=F)
@@ -27,7 +33,6 @@ nopvo_nonregvars_wtd_se = read.csv("nopvo_nonreg_se_wtd.csv", check.names=F)
 #Variables to get#
 ##################
 
-#Subset NOPVO data on these values because the data need to be in a smaller object
 reg_variables <- c(
   "BureauID",
   "Birthyear",
@@ -79,19 +84,16 @@ nopvo <- subset(nopvo.spss, select = c(reg_variables, nonreg_variables))
 #Removing bureau 5 because it is missing too many variables
 nopvo <- nopvo[which(nopvo$BureauID != 5),]
 
-
-#Create "age" groups
+#Create "agecats" groups
 nopvo$agecats <- cut(2006 - nopvo$Birthyear, c(17,24,34,44,54,66))
-
 names(nopvo) = c("BureauID", regvar_labels, nonregvar_labels, "agecats")
-
 regvar_labels = c(regvar_labels, "agecats")
 
 ##########
 #Recoding#
 ##########
 
-#some weird namespacing going on...manually specify car
+#some weird namespacing going on...have to manually specify car
 
 #gender
 nopvo$gender <- car::recode(nopvo$gender, "'1' = 'Male'; '2' = 'Female'", as.factor.result = TRUE)
@@ -151,10 +153,11 @@ nopvo_lm$agecats = NULL
 nopvo$birthyear = NULL
 regvar_labels = regvar_labels[-1]
 
-#######################################
-#Creating frequency tables data.frames#
-#######################################
+###############################
+#Creating estimate data.frames#
+###############################
 
+#REGISTER
 nopvo_reg.crosstables <- list(NA)
 nopvo_reg.n <- list(NA)
 for (i in 1:length(c(regvar_labels))){
@@ -165,8 +168,14 @@ for (i in 1:length(c(regvar_labels))){
   nopvo_reg.n[[i]] <- rowSums(nopvo_reg.crosstables[[i]]$t)
 }
 
-#some errors here, fix it
+#Converting the proportional tables from the CrossTables objects into data.frames
+nopvo_regvars_est <- list(NA)
+nopvo_regvars_est <- lapply(nopvo_reg.crosstables, function(x){
+  as.data.frame(rbind(x$prop.row[1:nrow(x$prop.row),]))
+})
 
+#TODO: some errors here, fix it
+#NONREGISTER
 nopvo_nonreg.crosstables <- list(NA)
 nopvo_nonreg.n <- list(NA)
 for (i in 1:length(c(nonregvar_labels))){
@@ -177,12 +186,7 @@ for (i in 1:length(c(nonregvar_labels))){
   nopvo_nonreg.n[[i]] <- rowSums(nopvo_nonreg.crosstables[[i]]$t)
 }
 
-#Converting the proportional tables from the CrossTables objects into data frames
-nopvo_regvars_est <- list(NA)
-nopvo_regvars_est <- lapply(nopvo_reg.crosstables, function(x){
-  as.data.frame(rbind(x$prop.row[1:nrow(x$prop.row),]))
-})
-
+#Converting the proportional tables from the CrossTables objects into data.frames
 nopvo_nonregvars_est <- list(NA)
 nopvo_nonregvars_est <- lapply(nopvo_nonreg.crosstables, function(x){
   as.data.frame(rbind(x$prop.row[1:nrow(x$prop.row),]))
@@ -193,13 +197,11 @@ nopvo_nonregvars_est <- lapply(nopvo_nonreg.crosstables, function(x){
 names(nopvo_regvars_est) = regvar_labels
 names(nopvo_nonregvars_est) = nonregvar_labels
 
-
 #####################################
 #Creating standard error data.frames#
 #####################################
 
-#REGISTER VARIABLES
-
+#REGISTER 
 nopvo_regvars_se <- nopvo_regvars_est
 for (n in 1:length(nopvo_regvars_est)) {
   for (i in 1:length(nopvo_regvars_est[[n]])) {
@@ -211,7 +213,6 @@ for (n in 1:length(nopvo_regvars_est)) {
 names(nopvo_regvars_se) = regvar_labels	
 
 #NONREGISTER VARIABLES
-
 nopvo_nonregvars_se <- nopvo_nonregvars_est
 for (n in 1:length(nopvo_nonregvars_est)) {
   for (i in 1:length(nopvo_nonregvars_est[[n]])) {
@@ -235,5 +236,9 @@ names(nopvo_regvars_wtd_est) = c("category", "variable", "bureau", "value")
 names(nopvo_regvars_wtd_se) = c("category", "variable", "bureau", "value")
 names(nopvo_nonregvars_wtd_est) = c("category", "variable", "bureau", "value")
 names(nopvo_nonregvars_wtd_se) = c("category", "variable", "bureau", "value")
+
+#####################################
+#Save Rdata for preprocessing script#
+#####################################
 
 save.image("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/NOPVO.RData")

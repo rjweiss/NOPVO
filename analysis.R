@@ -1,6 +1,10 @@
 rm(list=ls(all=T))
 gc()
 
+#TODO: Fix all of the sqldf calls to refer to the right data.frame dimensions (this is because nopvo_script.R renamed all of the dimensions)
+#TODO: Fix the mahalanobis distance function to account for CBS standard errors
+
+
 # install.packages("Hmisc")
 # install.packages("gmodels")
 # install.packages("gdata")

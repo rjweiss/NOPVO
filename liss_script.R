@@ -1,4 +1,5 @@
-#TODO: nonregvars
+#TODO: Get the relevant nonregvars
+#TOOD: Fix the recodes to match NOPVO
 
 setwd("C:/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
