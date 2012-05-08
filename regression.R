@@ -10,11 +10,11 @@ load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/NOPVO.RData")
 #Functions#
 ###########
 
-getLm = function(elem){
+getNOPVOLm = function(elem){
   dlply(nopvo_lm[complete.cases(with(nopvo_lm, eval(parse(text=paste(elem))))),], .(BureauID), lm, formula = age ~ eval(parse(text=paste(elem))))
 }
 
-getMtable = function(elem){
+getNOPVOMtable = function(elem){
   setCoefTemplate(simple=c(est="($est:#)($p:*)")) 
   do.call(mtable, c(elem, c(list(
     #   coef.style="simple",
@@ -45,9 +45,13 @@ regvars <- as.array(c(
 #"nationality",
 #"numpersonshh"))
 
-models = alply(regvars, 1, .fun = getLm)
+###################
+#NOPVO regressions#
+###################
+
+models = alply(regvars, 1, .fun = getNOPVOLm)
 names(models) = regvars
-output = llply(.data = models, .fun = getMtable)
+output = llply(.data = models, .fun = getNOPVOMtable)
 names(output) = regvars
 
 #relabeling output
@@ -92,6 +96,9 @@ output$health = relabel(with(output, health),
 
 #creating output for ggplots
 
+######
+#LISS#
+######
 
 # #saving output as a single excel file
 # setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/output/regression")

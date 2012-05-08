@@ -1,7 +1,6 @@
 rm(list=ls(all=T))
 gc()
-
-#TODO: Fix the 
+#This script takes the LISS, CBS, and NOPVO data and reformats it for the analysis script
 
 #source scripts
 #source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/nopvo_script.R")
@@ -80,7 +79,7 @@ reg_benchmarks$region <- reg_benchmarks$region[region_order,, drop=F]
 rm(province_order, region_order)
 
 #IMPORTANT: need to remove the "Origin unknowns" from reg_benchmarks
-#TODO: FIX THIS, IT'S HORRIBLE
+#TODO: Fix this variable collapsing, it's really ugly
 tmp <- rownames(reg_benchmarks$originself)
 tmp <- tmp[-8]
 reg_benchmarks$originself <- as.data.frame(reg_benchmarks$originself[-8,])

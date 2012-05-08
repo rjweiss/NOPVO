@@ -3,7 +3,7 @@ gc()
 
 #TODO: Fix all of the sqldf calls to refer to the right data.frame dimensions (this is because nopvo_script.R renamed all of the dimensions)
 #TODO: Fix the mahalanobis distance function to account for CBS standard errors
-
+#TODO: Move all table generation code to tables.R
 
 # install.packages("Hmisc")
 # install.packages("gmodels")

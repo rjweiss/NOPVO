@@ -1,4 +1,7 @@
+#This script takes the LISS data, combines into one datafile, and creates estimates
+
 #TODO: Get the relevant nonregvars
+#TODO: use library foreign instead of Hmisc, so that you can use factors instead of strings for recoding
 #TOOD: Fix the recodes to match NOPVO
 
 setwd("C:/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
@@ -104,9 +107,6 @@ names(freqtables) = c(
   "originself",
   "originfather",
   "originmother")
-
-#take a random sample from liss_etc of the same size as liss
-#liss_etc = liss_etc[sample(nrow(liss), replace=F), ]
 
 #remove where region or province is missing
 liss_etc = liss_etc[complete.cases(liss_etc$regio),]

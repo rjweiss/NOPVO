@@ -1,3 +1,5 @@
+#This script generates all the plots from the analysis
+
 rm(list=ls(all=T))
 gc()
 
