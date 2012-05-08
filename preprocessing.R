@@ -1,6 +1,5 @@
-rm(list=ls(all=T))
-gc()
 #This script takes the LISS, CBS, and NOPVO data and reformats it for the analysis script
+#This script should be run from within analysis.R
 
 #source scripts
 #source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/nopvo_script.R")
