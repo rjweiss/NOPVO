@@ -5,6 +5,7 @@
 
 rm(list=ls(all=T))
 gc()
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
 
 #TODO: Fix all of the sqldf calls to refer to the right data.frame dimensions (this is because nopvo_script.R renamed all of the dimensions)
 #TODO: Fix the mahalanobis distance function to account for CBS standard errors
@@ -23,6 +24,7 @@ gc()
 
 #load libraries
 library(Hmisc)
+library(car)
 library(gmodels)
 library(gdata)
 library(reshape)
@@ -34,7 +36,6 @@ library(reshape2)
 library(memisc)
 
 
-setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
 source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/preprocessing.R")
 
 star = function(x){
@@ -58,14 +59,14 @@ nopvo_regvars_wtd_err <- sqldf("select nre.variable, nre.bureau, nre.category, n
 nopvo_regvars_wtd_err <- sqldf("select err.variable, err.bureau, err.category, err.est, err.err, err.abs_err, se.value as se from nopvo_regvars_wtd_err err join nopvo_regvars_wtd_se se on err.variable=se.variable and err.bureau=se.bureau and err.category = se.category")
 
 #Nonregister
-#TODO: recode nonregister benchmark categories (this must be done in preprocessing.R)
+#TODO: recode nonregister benchmark categories (this must be done in cbs_script.R)
 
 #unweighted
-nopvo_nonregvars_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.value as err, abs(nre.value-rb.value) as abs_err FROM nopvo_nonregvars_est nre, nonreg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
+nopvo_nonregvars_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.var as err, abs(nre.value-rb.var) as abs_err FROM nopvo_nonregvars_est nre, nonreg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
 nopvo_nonregvars_err <- sqldf("select err.variable, err.bureau, err.category, err.est, err.err, err.abs_err, se.value as se from nopvo_nonregvars_err err join nopvo_nonregvars_se se on err.variable=se.variable and err.bureau=se.bureau and err.category = se.category")
 
 #weighted
-nopvo_nonregvars_wtd_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.value as err, abs(nre.value-rb.value) as abs_err FROM nopvo_nonregvars_wtd_est nre, nonreg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
+nopvo_nonregvars_wtd_err <- sqldf("select nre.variable, nre.bureau, nre.category, nre.value as est, nre.value-rb.var as err, abs(nre.value-rb.var) as abs_err FROM nopvo_nonregvars_wtd_est nre, nonreg_benchmarks rb where nre.variable = rb.variable and nre.category = rb.category")
 nopvo_nonregvars_wtd_err <- sqldf("select err.variable, err.bureau, err.category, err.est, err.err, err.abs_err, se.value as se from nopvo_nonregvars_wtd_err err join nopvo_nonregvars_wtd_se se on err.variable=se.variable and err.bureau=se.bureau and err.category = se.category")
 
 #get nopvo bureau n

@@ -109,43 +109,38 @@ liss_regvar_abs_errs$avg_abs_err_regvar = liss_regvar_abs_errs$sum_abs_err/liss_
 
 #unweighted register variables 
 
-#TODO: something wrong here, multiple originself, originmother, originfather
-nopvo_regvars_err_modes = sqldf("select nre._id, nre.variable, nre._bureau, nre.value, nre.adjusted, nre.abs_adjusted, nre.se from nopvo_regvars_err nre, reg_benchmark_modes rbm where nre.variable = rbm.value")
-names(nopvo_regvars_err_modes) = c("id", "variable", "bureau", "value", "adjusted", "abs_adjusted", "se")
-nvars = sqldf("select count(distinct id) from nopvo_regvars_err_modes group by bureau")
-names(nvars) = c("nvars")
-sum_abs_errs = sqldf("select *, sum(abs_adjusted) from (select distinct * from nopvo_regvars_err_modes) group by bureau")
-names(sum_abs_errs) = c("id", "variable", "bureau", "value", "adjusted", "abs_adjusted", "se", "sum_abs_adjusted")
-sum_abs_errs$avg_abs_err_regvar = sum_abs_errs$sum_abs_adjusted/nvars
-regvar_avg_abs_err = melt(subset(sum_abs_errs, select = c(bureau, avg_abs_err_regvar)))
+#TODO: where's region in nopvo modes?
+nopvo_regvars_err_modes = sqldf("select nre.variable, nre.category, nre.bureau, nre.est, nre.err, nre.abs_err, nre.se from nopvo_regvars_err nre, reg_benchmark_modes rbm where nre.category = rbm.value and nre.variable = rbm.L1")
+nopvo_regvars_n = sqldf("select count(distinct variable) from nopvo_regvars_err_modes group by bureau")
+names(nopvo_regvars_n) = c("nvars")
+nopvo_regvars_sum_abs_errs = sqldf("select *, sum(abs_err) as sum_abs_err from (select distinct * from nopvo_regvars_err_modes) group by bureau")
+nopvo_regvars_sum_abs_errs$avg_abs_err_regvar = nopvo_regvars_sum_abs_errs$sum_abs_err/nopvo_regvars_n
+nopvo_regvars_avg_abs_err = melt(subset(nopvo_regvars_sum_abs_errs, select = c(bureau, avg_abs_err_regvar)))
+#TODO: In plots.R, change to "regvars" from "regvar"
 
 #unweighted nonregister variables
-nopvo_nonregvars_err_modes = sqldf("select nre._id, nre.variable, nre._bureau, nre.value, nre.adjusted, nre.abs_adjusted, nre.se from nopvo_nonregvars_err nre, nonreg_benchmark_modes rbm where nre.variable = rbm.value")
-names(nopvo_nonregvars_err_modes) = c("id", "variable", "bureau", "value", "adjusted", "abs_adjusted", "se")
-nvars = sqldf("select count(distinct id) from nopvo_nonregvars_err_modes group by bureau")
-names(nvars) = c("nvars")
-sum_abs_errs = sqldf("select *, sum(abs_adjusted) from (select distinct * from nopvo_nonregvars_err_modes) group by bureau")
-names(sum_abs_errs) = c("id", "variable", "bureau", "value", "adjusted", "abs_adjusted", "se","sum_abs_adjusted")
-sum_abs_errs$avg_abs_err_nonregvar = sum_abs_errs$sum_abs_adjusted/nvars
-nonregvar_avg_abs_err = melt(subset(sum_abs_errs, select = c(bureau, avg_abs_err_nonregvar)))
+nopvo_nonregvars_err_modes = sqldf("select nre.variable, nre.category, nre.bureau, nre.est, nre.err, nre.abs_err, nre.se from nopvo_nonregvars_err nre, nonreg_benchmark_modes rbm where nre.category = rbm.value and nre.variable = rbm.L1")
+nopvo_nonregvars_n = sqldf("select count(distinct variable) from nopvo_nonregvars_err_modes group by bureau")
+names(nopvo_nonregvars_n) = c("nvars")
+nopvo_nonregvars_sum_abs_errs = sqldf("select *, sum(abs_err) as sum_abs_err from (select distinct * from nopvo_nonregvars_err_modes) group by bureau")
+nopvo_nonregvars_sum_abs_errs$avg_abs_err_nonregvar = nopvo_nonregvars_sum_abs_errs$sum_abs_err/nopvo_nonregvars_n
+nopvo_nonregvars_avg_abs_err = melt(subset(nopvo_nonregvars_sum_abs_errs, select = c(bureau, avg_abs_err_nonregvar)))
 
 #weighted register variables
-nopvo_regvars_wtd_err_modes = sqldf("select nre._id, nre.variable, nre._bureau, nre.value, nre.adjusted, nre.abs_adjusted, nre.se from nopvo_regvars_wtd_err nre, reg_benchmark_modes rbm where nre.variable = rbm.value")
-names(nopvo_regvars_wtd_err_modes) = c("id", "variable", "bureau", "value", "adjusted", "abs_adjusted", "se")
-nvars_wtd = nvars = sqldf("select count(distinct id) from nopvo_regvars_wtd_err_modes group by bureau")
-names(nvars_wtd) = c("nvars")
-sum_abs_errs_wtd = sqldf("select *, sum(abs_adjusted) from (select distinct * from nopvo_regvars_wtd_err_modes) group by bureau")
-names(sum_abs_errs_wtd) = c("id",  "variable", "bureau","value", "adjusted", "abs_adjusted", "se","sum_abs_adjusted")
-sum_abs_errs_wtd$avg_abs_err_regvar_wtd = sum_abs_errs_wtd$sum_abs_adjusted/nvars_wtd
-regvar_avg_abs_err_wtd = melt(subset(sum_abs_errs_wtd, select = c(bureau, avg_abs_err_regvar_wtd)))
+nopvo_regvars_wtd_err_modes = sqldf("select nre.variable, nre.category, nre.bureau, nre.est, nre.err, nre.abs_err, nre.se from nopvo_regvars_wtd_err nre, reg_benchmark_modes rbm where nre.category = rbm.value and nre.variable = rbm.L1")
+nopvo_wtd_regvars_n = sqldf("select count(distinct variable) from nopvo_regvars_wtd_err_modes group by bureau")
+names(nopvo_wtd_regvars_n) = c("nvars")
+nopvo_regvars_wtd_sum_abs_errs = sqldf("select *, sum(abs_err) as sum_abs_err from (select distinct * from nopvo_regvars_wtd_err_modes) group by bureau")
+nopvo_regvars_wtd_sum_abs_errs$avg_abs_wtd_err_regvar = nopvo_regvars_wtd_sum_abs_errs$sum_abs_err/nopvo_wtd_regvars_n
+nopvo_regvars_wtd_avg_abs_err = melt(subset(nopvo_regvars_wtd_sum_abs_errs, select = c(bureau, avg_abs_wtd_err_regvar)))
+#TODO: In plots.R, change to "regvars" from "regvar"
+
 
 #weighted nonregister variables
-nopvo_nonregvars_wtd_err_modes = sqldf("select nre._id, nre.variable, nre._bureau, nre.value, nre.adjusted, nre.abs_adjusted, nre.se from nopvo_nonregvars_wtd_err nre, nonreg_benchmark_modes rbm where nre.variable = rbm.value")
-names(nopvo_nonregvars_wtd_err_modes) = c("id", "variable", "bureau","value", "adjusted", "abs_adjusted", "se")
-#nopvo_nonregvars_err_modes = unique(nopvo_nonregvars_err_modes)
-nvars_wtd = sqldf("select count(distinct id) from nopvo_nonregvars_wtd_err_modes group by bureau")
-names(nvars_wtd) = c("nvars")
-sum_abs_errs_wtd = sqldf("select *, sum(abs_adjusted) from (select distinct * from nopvo_nonregvars_wtd_err_modes) group by bureau")
-names(sum_abs_errs_wtd) = c("id", "variable", "bureau",  "value", "adjusted", "abs_adjusted", "se","sum_abs_adjusted")
-sum_abs_errs_wtd$avg_abs_err_nonregvar_wtd = sum_abs_errs_wtd$sum_abs_adjusted/nvars_wtd
-nonregvar_avg_abs_err_wtd = melt(subset(sum_abs_errs_wtd, select = c(bureau, avg_abs_err_nonregvar_wtd)))
+nopvo_nonregvars_wtd_err_modes = sqldf("select nre.variable, nre.category, nre.bureau, nre.est, nre.err, nre.abs_err, nre.se from nopvo_nonregvars_wtd_err nre, nonreg_benchmark_modes rbm where nre.category = rbm.value and nre.variable = rbm.L1")
+nopvo_wtd_nonregvars_n = sqldf("select count(distinct variable) from nopvo_nonregvars_wtd_err_modes group by bureau")
+names(nopvo_wtd_nonregvars_n) = c("nvars")
+nopvo_nonregvars_wtd_sum_abs_errs = sqldf("select *, sum(abs_err) as sum_abs_err from (select distinct * from nopvo_nonregvars_wtd_err_modes) group by bureau")
+nopvo_nonregvars_wtd_sum_abs_errs$avg_abs_wtd_err_nonregvar = nopvo_nonregvars_wtd_sum_abs_errs$sum_abs_err/nopvo_wtd_nonregvars_n
+nopvo_nonregvars_wtd_avg_abs_err = melt(subset(nopvo_nonregvars_wtd_sum_abs_errs, select = c(bureau, avg_abs_wtd_err_nonregvar)))
+#TODO: In plots.R, change to "nonregvars" from "nonregvar"

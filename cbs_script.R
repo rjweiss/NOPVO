@@ -172,8 +172,6 @@ cbs_total_n = data.frame(ipo2006, ipo2008, ebb2006, ebb2008, pols2006, pols2008)
 cbs_n = data.frame(cbs_total_n$ebb2006, cbs_total_n$ebb2006, cbs_total_n$pols2006, cbs_total_n$pols2006, cbs_total_n$pols2006, cbs_total_n$pols2006, cbs_total_n$pols2006)
 names(cbs_n) = nonreg_var_labels
 
-
-
 #######################
 #Writing out CSV files#
 #######################

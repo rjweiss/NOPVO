@@ -4,13 +4,29 @@
 #TODO: use library foreign instead of Hmisc, so that you can use factors instead of strings for recoding
 #TOOD: Fix the recodes to match NOPVO
 
-setwd("C:/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
 library(Hmisc)
-
+ 
 liss = spss.get("LISS_DATA.sav")#, use.value.labels=TRUE)
 liss_etc = spss.get("reg_prov_apr2008.sav")#, use.value.labels=TRUE))
 liss_etc = liss_etc[liss_etc$doetmee == "yes",]
+
+library(foreign)
+liss <- read.spss("LISS_DATA.sav",
+                        use.value.labels=FALSE,
+                        to.data.frame=TRUE,
+                        trim.factor.names = TRUE, 
+                        reencode = NA, 
+)
+
+liss_etc <- read.spss("reg_prov_apr2008.sav",
+                        use.value.labels=FALSE,
+                        to.data.frame=TRUE,
+                        trim.factor.names = TRUE, 
+                        reencode = NA, 
+)
+
 
 detach(package:Hmisc, unload=TRUE)
 library(car)

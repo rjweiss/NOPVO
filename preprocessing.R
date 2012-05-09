@@ -2,12 +2,11 @@
 #This script should be run from within analysis.R
 
 #source scripts
-#source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/nopvo_script.R")
-#source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/cbs_script.R")
-#source("/Users/Rebecca/Dropbox/NOPVO/analysis/scripts/liss_script.R") #unloads Hmisc, loads car
+#source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/nopvo_script.R")
+#source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/cbs_script.R")
+#source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/liss_script.R") #unloads Hmisc, loads car
 
 #Load in data
-
 load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/GBA_tables.RData")
 load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/CBS.RData")
 load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/LISS.RData")
@@ -25,7 +24,6 @@ reformat <- function(l, benchmarks=F){
 
 #register variable benchmarks
 reg_benchmarks = benchmarks
-
 rownames(reg_benchmarks$AGECATS)[5] = c("(54,66]")
 
 rm(
@@ -54,7 +52,7 @@ rm(
 
 #remove children in house since we're not using this variable anymore
 reg_benchmarks$NUMCHILDHH = NULL
-reg_benchmarks$URBANIZATION = NULL #temporarily removing urbanization
+reg_benchmarks$URBANIZATION = NULL
 
 #make sure benchmark names match variable names
 names(reg_benchmarks) = tolower(names(reg_benchmarks))
