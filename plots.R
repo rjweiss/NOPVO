@@ -2,35 +2,36 @@
 
 #plotting all estimates, estimate errors, and standard errors for each NOPVO panel
 setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_category")
- 
+
 
 #TODO: add benchmark values as a different color bar 
-data = melt(nopvo_regvars_err, 
-             id.vars = c("variable", "bureau", "category"),
-             measure.vars = c("se", "est", "err"))
 
-names(data) = c("variable", "bureau", "category", "parameter", "value")
+benchmarks = reg_benchmarks
+benchmarks$bureau = c("CBS")
+benchmarks$var = c("Benchmark")
 
-plotter = function(df){
-   var = unique(df$variable)
-   parameter = unique(df$parameter)
-   filename <- function(y){
-     paste("graphs_", var, "_", df$category, "_", y, ".pdf", sep = "")
-   }
-   p = ggplot(df, aes(x = reorder(bureau, value), y = value)) + geom_bar(stat = "identity") +
-   scale_x_discrete("Bureaus") +
-   scale_y_continuous(parameter, limits=c(0,1)) +
-   opts(
-     title = paste(df$variable, ": ", df$category, sep = ""))
-   suppressMessages(ggsave(filename(paste(parameter)), height = 3, width = 9, p, dpi = 100))
+nopvo_regvars = nopvo_regvars_est
+nopvo_regvars$var = c("NOPVO")
+
+plot_data = rbind(nopvo_regvars, benchmarks)
+
+plotter = function(df, upper, lower){
+  var = unique(df$variable)
+  parameter = unique(df$parameter)
+  filename <- function(y){
+    paste(var, "_", df$category, y, ".pdf", sep = "")
+  }
+  p = ggplot(df, aes(x = reorder(bureau, value), y = value*100, fill=var)) + geom_bar(stat = "identity") +
+    scale_x_discrete("Bureaus") +
+    scale_y_continuous(parameter, limits=c(upper, lower)) +
+    opts(
+      title = paste(df$variable, ": ", df$category, sep = ""))
+  suppressMessages(ggsave(filename(paste(parameter)), height = 3, width = 9, p, dpi = 100))
 }
 
- d_ply(data, .(parameter), function(dat){
-   d_ply(dat, .(category), .progress ="text", function(df){
-   plotter(df)
-   })
- })
-
+d_ply(plot_data, .variables = c('variable', 'category'), .progress ="text", function(df){
+  plotter(df, 0, 100)
+})
 
 ###########
 #AAE plots#
@@ -56,7 +57,7 @@ aae_wtd_data = rbind(
 
 aae_delta = ddply(aae_wtd_data, .(group), function(df){
   ddply(df, .(bureau), function(x){
-  diff(x$value)
+    diff(x$value)
   })
 })
 
@@ -68,7 +69,7 @@ d_ply(nopvo_regvars_avg_abs_err, .(group), .progress = "text", function(df){
   df$variable = factor(df$variable)
   
   p = ggplot(df, aes(x = reorder(bureau, value), y = value)) +
-    geom_bar(stat = "identity", position = "dodge") +
+    geom_bar(aes(width=0.75),stat = "identity", position = "dodge") +
     scale_x_discrete("Samples") +
     scale_y_continuous("") +
     opts(
@@ -83,7 +84,7 @@ d_ply(nopvo_nonregvars_avg_abs_err, .(group), .progress = "text", function(df){
   df$variable = factor(df$variable)
   
   p = ggplot(df, aes(x = reorder(bureau, value), y = value)) +
-    geom_bar(stat = "identity", position = "dodge") +
+    geom_bar(aes(width=0.75), stat = "identity", position = "dodge") +
     scale_x_discrete("Samples") +
     scale_y_continuous("") +
     opts(
@@ -99,10 +100,10 @@ cbs_regvars = data.frame(ebb_regvar_abs_err$abs_err, pols_regvar_abs_err$abs_err
 names(cbs_regvars) = c("ebb", "pols")
 cbs_regvars = melt(cbs_regvars)
 
-p = ggplot(cbs_regvars, aes(x = variable, y = value)) + 
-  geom_bar(stat="identity") +
+p = ggplot(cbs_regvars, aes(x = variable, y = value*100)) + 
+  geom_bar(aes(width=0.25), stat="identity") +
   scale_x_discrete("Samples") +
-  scale_y_continuous("Percent", limits = c(0, 0.10)) +
+  scale_y_continuous("Percent error", limits = c(0, 10)) +
   opts(
     title = "CBS: Average Absolute Error over Register Variables"
     )
@@ -112,13 +113,13 @@ cbs_wtd_regvars = data.frame(ebb_regvar_wtd_abs_err$abs_err, pols_regvar_wtd_abs
 names(cbs_wtd_regvars) = c("ebb", "pols")
 cbs_wtd_regvars = melt(cbs_wtd_regvars)
 
-p = ggplot(cbs_wtd_regvars, aes(x = variable, y = value)) + 
-  geom_bar(stat="identity") +
+p = ggplot(cbs_wtd_regvars, aes(x = variable, y = value*100)) + 
+  geom_bar(aes(width=0.25), stat="identity") +
   scale_x_discrete("Samples") +
-  scale_y_continuous("Percent", limits = c(0, 0.10)) +
+  scale_y_continuous("Percent", limits = c(0, 10)) +
   opts(
     title = "CBS: Average Absolute Error over Register Variables"
-    )
+    ) 
 suppressMessages(ggsave("cbs_wtd_accuracy.pdf", p, height = 5, dpi = 300))
 
 #CBS + LISS
@@ -132,11 +133,12 @@ liss_regvars$group = c("LISS")
 cbs_liss_regvars = rbind(cbs_regvars, liss_regvars)
 names(cbs_liss_regvars) = c("bureau","value","group")
 
-p = ggplot(cbs_liss_regvars, aes(x = bureau, y = value, fill = group)) + 
-  geom_bar(stat="identity") +
+p = ggplot(cbs_liss_regvars, aes(x = bureau, y = value*100, fill = group)) + 
+  geom_bar(aes(width=0.25), stat="identity") +
   scale_x_discrete("Samples") +
-  scale_y_continuous("Percent", limits = c(0, 0.10)) +
+  scale_y_continuous("Percent", limits = c(0, 10)) +
   scale_fill_discrete(name = "Source") +
+  scale_fill_brewer(palette="Dark2") +
   opts(
     title = "CBS and LISS: Average Absolute Error over Register Variables"
     )
@@ -151,10 +153,11 @@ nopvo_regvars$group = c("NOPVO")
 cbs_liss_nopvo_regvars = rbind(cbs_liss_regvars, nopvo_regvars)
 
 p = ggplot(cbs_liss_nopvo_regvars, aes(x = reorder(bureau, value, max), y = value, fill = group)) + 
-  geom_bar(stat="identity") +
+  geom_bar(aes(width=0.75), stat="identity") +
   scale_x_discrete("Samples") +
   scale_y_continuous("Percent", limits = c(0, 0.11)) +
   scale_fill_discrete(name = "Source") +
+  scale_fill_brewer(palette="Dark2") +
   opts(
     title = "CBS, LISS, and NOPVO: Average Absolute Error over Register Variables"
     )
@@ -169,11 +172,11 @@ names(cbs_regvars) = c("bureau", "value", "group")
 aae_data = melt(rbind(aae_data, cbs_regvars))
 
 p = ggplot(aae_data, aes(x = reorder(bureau, value), y = value, fill = group)) + 
-  geom_bar(stat="identity") +
+  geom_bar(aes(width=0.75), stat="identity") +
   scale_x_discrete("Samples") +
   scale_y_continuous("Percent", limits = c(0, 0.11)) +
   scale_fill_discrete(name = "Source") +
-    opts(
+  opts(
     title = "Comparing Average Absolute Errors of register variables"
     )
 suppressMessages(ggsave("reg_accuracy_comparison.pdf", p, height = 5, dpi = 300))
@@ -185,7 +188,7 @@ d_ply(aae_wtd_data, .(group), .progress = "text", function(df){
   df$variable = factor(df$variable)
   
   p = ggplot(df, aes(x = reorder(bureau, value), y = value, fill = variable)) +
-    geom_bar(stat = "identity", position = "dodge") +
+    geom_bar(aes(width=0.75), stat = "identity", position = "dodge") +
     scale_fill_discrete(name = "Condition", breaks = b, labels=c("Unweighted", "Weighted")) +
     scale_x_discrete("Samples") +
     scale_y_continuous("") +
@@ -200,7 +203,7 @@ d_ply(aae_delta, .(group), .progress = "text", function(df){
   g = unique(df$group)
   
   p = ggplot(df, aes(reorder(bureau, V1), V1)) +
-    geom_bar(stat = "identity") +
+    geom_bar(aes(width=0.75), stat = "identity") +
     scale_x_discrete("Samples") +
     scale_y_continuous("Delta") +
     opts(
@@ -208,6 +211,26 @@ d_ply(aae_delta, .(group), .progress = "text", function(df){
       )
   suppressMessages(ggsave(paste(g, "_delta.pdf", sep=""), p, height = 5, dpi = 300))
 })
+
+##############
+#T-test plots#
+##############
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_mode_cat")
+
+levels(regvars_t_stars_count$variable)[levels(regvars_t_stars_count$variable)=="three"] = "***" 
+levels(regvars_t_stars_count$variable)[levels(regvars_t_stars_count$variable)=="two"] = "**" 
+levels(regvars_t_stars_count$variable)[levels(regvars_t_stars_count$variable)=="one"] = "*" 
+levels(regvars_t_stars_count$variable)[levels(regvars_t_stars_count$variable)=="cross"] = "+" 
+
+regvars_t_stars_count = arrange(regvars_t_stars_count, desc(as.numeric(bureau)))
+regvars_t_stars_count$bureau = factor(regvars_t_stars_count$bureau, as.character(regvars_t_stars_count$bureau)) #throws a warning
+
+p = ggplot(regvars_t_stars_count, aes(bureau, value)) + 
+  geom_bar(stat="identity", position = "dodge") + facet_wrap(~ variable) +
+  scale_x_discrete("Bureaus") +
+  scale_y_continuous("Count", limits = c(0, 10)) +
+  opts(title = "Total significant mode category estimate differences", strip.text.x = theme_text(size=18), axis.text.x=theme_text(angle=-90))
+suppressMessages(ggsave("t_signif_totals.pdf", p, height = 5.5, dpi = 300))
 
 ###################
 #Mahalanobis plots#

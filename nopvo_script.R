@@ -20,7 +20,7 @@ nopvo.spss <- read.spss("NOPVO_DATA_english.sav",
                         to.data.frame=TRUE,
                         trim.factor.names = TRUE, 
                         reencode = NA, 
-                      )
+                        )
 
 #Reading in the weighted data given to me by Sanne
 nopvo_regvars_wtd_est = read.csv("nopvo_reg_est_wtd.csv", check.names=F)
@@ -111,9 +111,9 @@ nopvo$province = car::recode(nopvo$province, "'1' = 'Groningen';'2' = 'Friesland
 nopvo$nationality <- car::recode(nopvo$nationality, "'1' = 'Dutch';'2' = 'not Dutch';'3' = 'Dutch'", as.factor.result = TRUE)
 
 #origins
-nopvo$originself <- car::recode(nopvo$originself, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles/Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
-nopvo$originfather <- car::recode(nopvo$originfather, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles/Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
-nopvo$originmother <- car::recode(nopvo$originmother, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles/Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
+nopvo$originself <- car::recode(nopvo$originself, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles and Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
+nopvo$originfather <- car::recode(nopvo$originfather, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles and Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
+nopvo$originmother <- car::recode(nopvo$originmother, "'1' = 'Netherlands'; '2' = 'Suriname'; '3' = 'Antilles and Aruba'; '4' = 'Indonesia'; '5' = 'Turkey'; '6' = 'Morocco'; '7' = 'Other'; '8' = 'Other'", as.factor.result = TRUE)
 
 #education
 nopvo$education = car::recode(nopvo$education, "'1' = 'Primary';'3' = 'Lower';'4' = 'Lower';'5' = 'Intermediate';'6' = 'Intermediate';'7' = 'Highest';'8' = 'Highest'; '99' = NA", as.factor.result = TRUE)

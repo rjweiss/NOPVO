@@ -34,9 +34,7 @@ liss_t = ddply(liss_regvars_err_modes, .variables=c('category', 'variable'), fun
 
 liss_t = join(liss_t, liss_regvars_err_modes)
 
-
 #nonregister variables
-
 
 #CBS
 

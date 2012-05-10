@@ -26,13 +26,13 @@ library(Hmisc)
 library(car)
 library(gmodels)
 library(gdata)
-library(reshape)
 library(foreign)
 library(descr)
 library(sqldf)
+library(memisc)
 library(plyr)
 library(reshape2)
-library(memisc)
+library(ggplot2)
 
 
 source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/preprocessing.R")
@@ -81,19 +81,20 @@ liss_err = sqldf("select le.category, le.value as est, le.variable, le.value - r
 
 liss_err = sqldf("select distinct * from liss_err natural join liss_se")
 
-setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
-
 #Average absolute errors
-source('avg_abs_err.R')
+source('/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/avg_abs_err.R')
 
 #T-tests
-source('ttests.R')
- 
-# #Mahalanobis distances
-# source('mahalanobis.R')
- 
-# #Creating tables
-# source('tables.R')
+source('/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/ttests.R')
 
-#Creating plots
-source('plots.R')
+# #Mahalanobis distances
+# source('/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/mahalanobis.R')
+
+#Regressions
+source('/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/regression.R')
+
+#Creating tables
+source('/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/tables.R')
+
+# #Creating plots
+# source('/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/plots.R')

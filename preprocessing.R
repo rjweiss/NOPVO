@@ -2,9 +2,9 @@
 #This script should be run from within analysis.R
 
 #source scripts
-# source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/nopvo_script.R")
-# source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/cbs_script.R")
-# source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/liss_script.R")
+source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/nopvo_script.R")
+source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/cbs_script.R")
+source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/liss_script.R")
 
 #Load in data
 load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/GBA_tables.RData")

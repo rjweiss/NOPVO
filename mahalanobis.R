@@ -6,11 +6,12 @@
 ###########
 
 mahal_dist = function(diff, mat){
-  #TODO: Fix Dirty Hack
+  #TODO: fix the tryCatch here
   dist = as.numeric(tryCatch(t(diff) %*% solve(mat, tol=1e-21) %*% diff, error = function(e) return("0")))
   return(dist)
 }
 
+#TODO: fix the mahal distance function
 get_mahal_dist = function(dat, n, regvars = T, cbs = F, nopvo = F, liss = F){
   if(liss){
     dat$n = n
@@ -71,7 +72,7 @@ get_mahal_dist = function(dat, n, regvars = T, cbs = F, nopvo = F, liss = F){
       })  
     }
   }
-}
+  }
 
 
 
@@ -112,5 +113,3 @@ liss_regvars_dist$bureau = c("liss")
 names(liss_regvars_dist) = c("id", "dist", "sig", "star", "bureau")
 
 #regvars_dist = rbind(liss_regvars_dist, regvars_dist)
-
-#TODO: Move all table generation code to tables.R

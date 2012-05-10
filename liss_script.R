@@ -52,13 +52,13 @@ liss$aantalhh = car::recode(liss$aantalhh, "'1' = 'One'; '2' = 'Two'; '3' = 'Thr
 liss$cr08a043 = car::recode(liss$cr08a043, "'0' = 'not Dutch'; '1' = 'Dutch'")
 
 liss[which(liss$cr08a053==1),]$cr08a054 = '0'
-liss$cr08a054 = car::recode(liss$cr08a054, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles/Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'", as.factor.result=TRUE)
+liss$cr08a054 = car::recode(liss$cr08a054, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles and Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'", as.factor.result=TRUE)
 
 liss[which(liss$cr08a057==1),]$cr08a058 = '0'
-liss$cr08a058 = car::recode(liss$cr08a058, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles/Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'; '8' = 'Other'; '99' = NA", as.factor.result=TRUE)
+liss$cr08a058 = car::recode(liss$cr08a058, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles and Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'; '8' = 'Other'; '99' = NA", as.factor.result=TRUE)
 
 liss[which(liss$cr08a060==1),]$cr08a061 = '0'
-liss$cr08a061 = car::recode(liss$cr08a061, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles/Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'; '8' = 'Other'; '99' = NA", as.factor.result=TRUE)
+liss$cr08a061 = car::recode(liss$cr08a061, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles and Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'; '8' = 'Other'; '99' = NA", as.factor.result=TRUE)
 
 #removing rows that are missing originfather and originmother
 liss = liss[complete.cases(liss$cr08a058),]
