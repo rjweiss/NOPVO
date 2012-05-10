@@ -89,19 +89,13 @@ pols_regvar_wtd_abs_err$abs_err = pols_regvar_wtd_abs_err$sum_abs_err/pols_nvars
 #LISS#
 ######
 
-liss_err = sqldf("select le.category, le.value, le.variable, le.value - rb.value as err from liss_est le, reg_benchmarks rb where le.category = rb._categories and le.variable = rb._id")
-
-liss_err = sqldf("select distinct * from liss_err natural join liss_se")
-names(liss_err) = c("category","est", "variable","err","se")
-
 liss_regvars_err_modes = sqldf("select le.category, le.est, le.variable, le.err, le.se from liss_err le, reg_benchmark_modes rbm where le.category = rbm.value and le.variable = rbm.L1")
 
-liss_nvars = sqldf("select count(distinct variable) from liss_regvars_err_modes")
-names(liss_nvars) = c("nvars")
+liss_regvars_nvars = sqldf("select count(distinct variable) from liss_regvars_err_modes")
+names(liss_regvars_nvars) = c("nvars")
 
-liss_regvar_abs_errs = sqldf("select *, sum(abs(err)) from (select distinct * from liss_regvars_err_modes)")
-names(liss_regvar_abs_errs) = c("category","est", "variable","err","se","sum_abs_err")
-liss_regvar_abs_errs$avg_abs_err_regvar = liss_regvar_abs_errs$sum_abs_err/liss_nvars
+liss_regvars_abs_errs = sqldf("select *, sum(abs(err)) as sum_abs_err from (select distinct * from liss_regvars_err_modes)")
+liss_regvars_abs_errs$abs_err = liss_regvars_abs_errs$sum_abs_err/liss_regvars_nvars
 
 #######
 #NOPVO#

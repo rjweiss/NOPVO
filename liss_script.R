@@ -1,43 +1,40 @@
 #This script takes the LISS data, combines into one datafile, and creates estimates
 
 #TODO: Get the relevant nonregvars
+
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
+
+#This script takes the LISS data, combines into one datafile, and creates estimates
+
+#TODO: Get the relevant nonregvars
 #TODO: use library foreign instead of Hmisc, so that you can use factors instead of strings for recoding
 #TOOD: Fix the recodes to match NOPVO
 
 setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/data/")
 
-library(Hmisc)
- 
-liss = spss.get("LISS_DATA.sav")#, use.value.labels=TRUE)
-liss_etc = spss.get("reg_prov_apr2008.sav")#, use.value.labels=TRUE))
-liss_etc = liss_etc[liss_etc$doetmee == "yes",]
-
-library(foreign)
 liss <- read.spss("LISS_DATA.sav",
-                        use.value.labels=FALSE,
-                        to.data.frame=TRUE,
-                        trim.factor.names = TRUE, 
-                        reencode = NA, 
-)
-
+                  use.value.labels=FALSE,
+                  to.data.frame=TRUE,
+                  trim.factor.names = TRUE, 
+                  reencode = NA, 
+                  )
 liss_etc <- read.spss("reg_prov_apr2008.sav",
-                        use.value.labels=FALSE,
-                        to.data.frame=TRUE,
-                        trim.factor.names = TRUE, 
-                        reencode = NA, 
-)
+                      use.value.labels=FALSE,
+                      to.data.frame=TRUE,
+                      trim.factor.names = TRUE, 
+                      reencode = NA, 
+                      )
+liss_etc = liss_etc[liss_etc$doetmee == 1,]
 
 
-detach(package:Hmisc, unload=TRUE)
-library(car)
 
 liss = subset(liss, select = c(
   geslacht, #gender 378 NA
   gebjaar, #birthyear 378 NA
   aantalhh, #numpersonshh
   cr08a043, #dutch
-  cr08a044, #other
-# cr08a052, #nationality
+  # cr08a044, #other
+  # cr08a052, #nationality
   cr08a053, #were you born in the netherlands?
   cr08a054, #in what country were you born? *
   cr08a057, #was your father born in the netherlands?
@@ -50,55 +47,30 @@ liss = subset(liss, select = c(
 liss = liss[complete.cases(liss$geslacht),]
 liss = liss[complete.cases(liss$cr08a043),]
 
-#recoding categories in variables to match benchmarks
-#this is kind of ridiculous, fix these recodes
-liss$cr08a054 = recode(liss$cr08a054, "NA = liss$cr08a053") #this will throw errors
-liss$cr08a058 = recode(liss$cr08a058, "NA = liss$cr08a057")#this will throw errors
-liss$cr08a061 = recode(liss$cr08a061, "NA = liss$cr08a060")#this will throw errors
+liss$geslacht = car::recode(liss$geslacht, "'1' = 'Male'; '2' = 'Female'", as.factor.result=TRUE)
+liss$aantalhh = car::recode(liss$aantalhh, "'1' = 'One'; '2' = 'Two'; '3' = 'Three'; '4' = 'Four'; '5' = 'Five'; '6' = 'Six or more'; '7' = 'Six or more'; '8' = 'Six or more'; '9' = 'Six or more'", as.factor.result = TRUE)
+liss$cr08a043 = car::recode(liss$cr08a043, "'0' = 'not Dutch'; '1' = 'Dutch'")
 
-liss$cr08a054 = recode(liss$cr08a054, "1 = 'Netherlands'")
-liss$cr08a054 = recode(liss$cr08a054, "'Surinam' = 'Suriname'")
-liss$cr08a054 = recode(liss$cr08a054, "'Dutch Antilles' = 'Antilles/Aruba'")
-#liss$cr08a054 = recode(liss$cr08a054, "'Turkey' = 'Turkye'")
-liss$cr08a054 = recode(liss$cr08a054, "2 = 'Other'")
-liss = sqldf(c("update liss set cr08a054 = 'Other' where cr08a054 = 'other non-western country (Africa, Latin America, Asia other than [in wave 1: Indonesia and] Japan)'", "select * from liss"))
-liss = sqldf(c("update liss set cr08a054 = 'Other' where cr08a054 = 'other western country (Europe, North America, [in wave 1: Indonesia,] Japan, Oceania)'", "select * from liss"))
-liss$cr08a054 = factor(liss$cr08a054)
-liss$cr08a058 = recode(liss$cr08a058, "1 = 'Netherlands'")
-liss$cr08a058 = recode(liss$cr08a058, "'Surinam' = 'Suriname'")
-liss$cr08a058 = recode(liss$cr08a058, "'Dutch Antilles' = 'Antilles/Aruba'")
-#liss$cr08a058 = recode(liss$cr08a058, "'Turkey' = 'Turkye'")
-liss$cr08a058 = recode(liss$cr08a058, "2 = 'Other'")
-liss$cr08a058 = recode(liss$cr08a058, "3 = 'Other'")
-liss = sqldf(c("update liss set cr08a058 = 'Other' where cr08a058 = 'I don''t know'", "select * from liss"))
-liss = sqldf(c("update liss set cr08a058 = 'Other' where cr08a058 = 'other non-western country (Africa, Latin America, Asia other than [in wave 1: Indonesia and] Japan)'", "select * from liss"))
-liss = sqldf(c("update liss set cr08a058 = 'Other' where cr08a058 = 'other western country (Europe, North America, [in wave 1: Indonesia,] Japan, Oceania)'", "select * from liss"))
-liss$cr08a058 = factor(liss$cr08a058)
-liss$cr08a061 = recode(liss$cr08a061, "1 = 'Netherlands'")
-liss$cr08a061 = recode(liss$cr08a061, "'Surinam' = 'Suriname'")
-liss$cr08a061 = recode(liss$cr08a061, "'Dutch Antilles' = 'Antilles and Aruba'")
-liss$cr08a061 = recode(liss$cr08a061, "'Turkey' = 'Turkye'")
-liss$cr08a061 = recode(liss$cr08a061, "2 = 'Other'")
-liss$cr08a061 = recode(liss$cr08a061, "3 = 'Other'")
-liss = sqldf(c("update liss set cr08a061 = 'Other' where cr08a061 = 'I don''t know'", "select * from liss"))
-liss = sqldf(c("update liss set cr08a061 = 'Other' where cr08a061 = 'other non-western country (Africa, Latin America, Asia other than [in wave 1: Indonesia and] Japan)'", "select * from liss"))
-liss = sqldf(c("update liss set cr08a061 = 'Other' where cr08a061 = 'other western country (Europe, North America, [in wave 1: Indonesia,] Japan, Oceania)'", "select * from liss"))
-liss$cr08a061 = factor(liss$cr08a061)
-liss$cr08a043 = recode(liss$cr08a043, "'yes' = 'Only Dutch'")
-liss$cr08a043 = recode(liss$cr08a043, "'no' = 'Only non-Dutch'")
-liss$aantalhh = recode(liss$aantalhh, "'One person' = 'One'")
-liss$aantalhh = recode(liss$aantalhh, "'Two persons' = 'Two'")
-liss$aantalhh = recode(liss$aantalhh, "'Three persons' = 'Three'")
-liss$aantalhh = recode(liss$aantalhh, "'Four persons' = 'Four'")
-liss$aantalhh = recode(liss$aantalhh, "'Five persons' = 'Five'")
-liss$aantalhh = recode(liss$aantalhh, "'Six persons' = 'Six or more'")
-liss$aantalhh = recode(liss$aantalhh, "'Seven persons' = 'Six or more'")
-liss$aantalhh = recode(liss$aantalhh, "'Eight persons' = 'Six or more'")
-liss$aantalhh = recode(liss$aantalhh, "'Nine persons or more' = 'Six or more'")
+liss[which(liss$cr08a053==1),]$cr08a054 = '0'
+liss$cr08a054 = car::recode(liss$cr08a054, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles/Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'", as.factor.result=TRUE)
+
+liss[which(liss$cr08a057==1),]$cr08a058 = '0'
+liss$cr08a058 = car::recode(liss$cr08a058, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles/Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'; '8' = 'Other'; '99' = NA", as.factor.result=TRUE)
+
+liss[which(liss$cr08a060==1),]$cr08a061 = '0'
+liss$cr08a061 = car::recode(liss$cr08a061, "'0' = 'Netherlands' ; '1' = 'Turkey'; '2' = 'Morocco'; '3' = 'Antilles/Aruba'; '4' = 'Suriname'; '5' = 'Indonesia'; '6' = 'Other'; '7' = 'Other'; '8' = 'Other'; '99' = NA", as.factor.result=TRUE)
+
+#removing rows that are missing originfather and originmother
+liss = liss[complete.cases(liss$cr08a058),]
+liss = liss[complete.cases(liss$cr08a061),]
 
 liss$age = 2008-liss$gebjaar
 liss = subset(liss, liss$age > 17 & liss$age <66)
 liss$agecats = cut(liss$age, c(17,24,34,44,54,66))
+
+liss_etc$regio = car::recode(liss_etc$regio, "'1' = '3 largest cities'; '2' = 'West';'3' = 'North'; '4' = 'East'; '5' = 'South'", as.factor.result = TRUE)
+
+liss_etc$prov = car::recode(liss_etc$prov, "'20' = 'Groningen'; '21' = 'Friesland'; '22' = 'Drenthe'; '23' = 'Overijssel'; '24' = 'Flevoland';'25' = 'Gelderland';       '26' = 'Utrecht'; '27' = 'Noord-Holland'; '28' = 'Zuid-Holland'; '29' = 'Zeeland'; '30' = 'Noord-Brabant'; '31' = 'Limburg';", as.factor.result=T)
 
 liss = subset(liss, select = c(
   geslacht, #gender
@@ -112,7 +84,7 @@ liss = subset(liss, select = c(
 
 freqtables = list(NA)
 for (i in 1:length(names(liss))){
-	freqtables[[i]] = freq(eval(parse(text = paste("liss$", names(liss)[i], sep = ""))), plot = F)
+  freqtables[[i]] = freq(eval(parse(text = paste("liss$", names(liss)[i], sep = ""))), plot = F)
 }
 
 names(freqtables) = c(
@@ -124,16 +96,8 @@ names(freqtables) = c(
   "originfather",
   "originmother")
 
-#remove where region or province is missing
 liss_etc = liss_etc[complete.cases(liss_etc$regio),]
 liss_etc = liss_etc[complete.cases(liss_etc$prov),]
-
-liss_etc = sqldf(c("update liss_etc set regio = '3 large cities: Amsterdam, Rotterdam, Den Haag + connected cities' where regio = 'Three largest cities'", "select * from liss_etc"))
-
-liss_etc$regio = recode(liss_etc$regio, "'Rest of West' = 'West (Utrecht, Noord-Holland, Zuid-Holland excl. 3 large cities'")
-liss_etc$regio = recode(liss_etc$regio, "'East' = 'East (Overijssel, Gelderland, Flevoland)'")
-liss_etc$regio = recode(liss_etc$regio, "'North' = 'North (Groningen, Friesland, Drenthe)'")
-liss_etc$regio = recode(liss_etc$regio, "'South' = 'South (Zeeland, Noord-Brabant, Limburg)'")
 
 region = freq(liss_etc$regio, plot = F)
 prov =  freq(liss_etc$prov, plot = F)

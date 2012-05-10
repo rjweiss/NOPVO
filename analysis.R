@@ -7,7 +7,6 @@ rm(list=ls(all=T))
 gc()
 setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
 
-#TODO: Fix all of the sqldf calls to refer to the right data.frame dimensions (this is because nopvo_script.R renamed all of the dimensions)
 #TODO: Fix the mahalanobis distance function to account for CBS standard errors
 #TODO: Write ttest.R
 
@@ -48,6 +47,8 @@ star = function(x){
 #Getting estimate errors in data.frames#
 ########################################
 
+#NOPVO
+
 #Register
 
 #unweighted
@@ -72,17 +73,27 @@ nopvo_nonregvars_wtd_err <- sqldf("select err.variable, err.bureau, err.category
 #get nopvo bureau n
 nopvo_n = read.csv("/Users/Rebecca/Dropbox/research/NOPVO/analysis/csv output/nopvo_n.csv")
 
+#LISS
+
+#Register
+
+liss_err = sqldf("select le.category, le.value as est, le.variable, le.value - rb.value as err from liss_est le, reg_benchmarks rb where le.category = rb.category and le.variable = rb.variable")
+
+liss_err = sqldf("select distinct * from liss_err natural join liss_se")
+
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
+
 #Average absolute errors
 source('avg_abs_err.R')
 
 #T-tests
 source('ttests.R')
-
-#Mahalanobis distances
-source('mahalanobis.R')
-
-#Creating tables
-source('tables.R')
+ 
+# #Mahalanobis distances
+# source('mahalanobis.R')
+ 
+# #Creating tables
+# source('tables.R')
 
 #Creating plots
 source('plots.R')

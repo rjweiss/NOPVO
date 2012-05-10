@@ -83,17 +83,14 @@ get_mahal_dist = function(dat, n, regvars = T, cbs = F, nopvo = F, liss = F){
 
 colnames(nopvo_regvars_se)[4] <- "se"
 colnames(nopvo_regvars_est)[4] <- "est"
-nopvo_regvars_err = sqldf("select _id, _bureau, variable, adjusted as err from nopvo_regvars_err")
-colnames(nopvo_regvars_err) <- c(".id", ".bureau", "variable", "err")
+nopvo_regvars_err = sqldf("select variable, bureau, category, err from nopvo_regvars_err")
 
 regvars = sqldf("select * from nopvo_regvars_se natural join nopvo_regvars_est natural join nopvo_regvars_err")
-names(regvars) = c("id", "bureau", "variable", "se", "est", "err")
 
 regvars_wtd = sqldf("select * from nopvo_regvars_wtd_se natural join nopvo_regvars_wtd_est natural join nopvo_regvars_wtd_err")
 
 regvars_wtd = sqldf("select * from nopvo_regvars_wtd_est natural join nopvo_regvars_wtd_err")
 
-names(regvars_wtd) = c("id", "bureau", "variable", "est", "err", "abs_err", "se")
 regvars_wtd$abs_err = NULL
 
 regvars_dist = get_mahal_dist(regvars, nopvo_n, regvars = T, cbs = F, nopvo = T, liss = F)

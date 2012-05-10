@@ -1,63 +1,58 @@
 #This script generates all the plots from the analysis
 
-rm(list=ls(all=T))
-gc()
-
-library(ggplot2)
-
-setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/")
-
-source("analysis.R")
-
 #plotting all estimates, estimate errors, and standard errors for each NOPVO panel
-# setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_category")
-# 
-# data = melt(regvars, 
-#             id.vars = c("id", "bureau", "variable"),
-#             measure.vars = c("se", "est", "err"))
-# 
-# names(data) = c("variable", "bureau", "category", "measure", "value")
+setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_category")
+ 
 
-# plotter = function(df){
-#   var = unique(df$variable)
-#   measure = unique(df$measure)
-#   filename <- function(y){
-#     paste("graphs_", var, "_", df$category, "_", y, ".pdf", sep = "")
-#   }
-#   p = ggplot(df, aes(x = reorder(bureau, value), y = value)) + geom_bar(stat = "identity") +
-#   scale_x_discrete("Bureaus") +
-#   scale_y_continuous(measure) +
-#   opts(
-#     title = paste(df$variable, ": ", df$category, sep = ""))
-#   suppressMessages(ggsave(filename(paste(measure)), height = 3, width = 9, p, dpi = 100))
-# }
+#TODO: add benchmark values as a different color bar 
+data = melt(nopvo_regvars_err, 
+             id.vars = c("variable", "bureau", "category"),
+             measure.vars = c("se", "est", "err"))
 
-# d_ply(data, .(measure), .progress ="text", function(dat){
-#   d_ply(dat, .(category), function(df){
-#   plotter(df)
-#   })
-# })
+names(data) = c("variable", "bureau", "category", "parameter", "value")
+
+plotter = function(df){
+   var = unique(df$variable)
+   parameter = unique(df$parameter)
+   filename <- function(y){
+     paste("graphs_", var, "_", df$category, "_", y, ".pdf", sep = "")
+   }
+   p = ggplot(df, aes(x = reorder(bureau, value), y = value)) + geom_bar(stat = "identity") +
+   scale_x_discrete("Bureaus") +
+   scale_y_continuous(parameter, limits=c(0,1)) +
+   opts(
+     title = paste(df$variable, ": ", df$category, sep = ""))
+   suppressMessages(ggsave(filename(paste(parameter)), height = 3, width = 9, p, dpi = 100))
+}
+
+ d_ply(data, .(parameter), function(dat){
+   d_ply(dat, .(category), .progress ="text", function(df){
+   plotter(df)
+   })
+ })
 
 
 ###########
 #AAE plots#
 ###########
 
+#TODO: fix widths of bars
+
 #NOPVO
 
 #plotting all average absolute errors, unweighted and weighted, for each NOPVO panel
 setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_aae")
 
-regvar_avg_abs_err$group = c("register")
-regvar_avg_abs_err_wtd$group = c("register")
-nonregvar_avg_abs_err$group = c("nonregister") 
-nonregvar_avg_abs_err_wtd$group = c("nonregister")
+nopvo_regvars_avg_abs_err$group = c("register")
+nopvo_regvars_wtd_avg_abs_err$group = c("register")
+nopvo_nonregvars_avg_abs_err$group = c("nonregister") 
+nopvo_nonregvars_wtd_avg_abs_err$group = c("nonregister")
 
 aae_wtd_data = rbind(
-  regvar_avg_abs_err, 
-  regvar_avg_abs_err_wtd,
-  nonregvar_avg_abs_err, 
-  nonregvar_avg_abs_err_wtd)
+  nopvo_regvars_avg_abs_err, 
+  nopvo_regvars_wtd_avg_abs_err,
+  nopvo_nonregvars_avg_abs_err, 
+  nopvo_nonregvars_wtd_avg_abs_err)
 
 aae_delta = ddply(aae_wtd_data, .(group), function(df){
   ddply(df, .(bureau), function(x){
@@ -67,7 +62,7 @@ aae_delta = ddply(aae_wtd_data, .(group), function(df){
 
 #accuracy plots
 
-d_ply(regvar_avg_abs_err, .(group), .progress = "text", function(df){
+d_ply(nopvo_regvars_avg_abs_err, .(group), .progress = "text", function(df){
   g = unique(df$group)
   b = as.character(unique(df$variable))
   df$variable = factor(df$variable)
@@ -82,7 +77,7 @@ d_ply(regvar_avg_abs_err, .(group), .progress = "text", function(df){
   suppressMessages(ggsave(paste(g, "_accuracy.pdf", sep = ""), p, height = 5, dpi = 300))
 })
 
-d_ply(nonregvar_avg_abs_err, .(group), .progress = "text", function(df){
+d_ply(nopvo_nonregvars_avg_abs_err, .(group), .progress = "text", function(df){
   g = unique(df$group)
   b = as.character(unique(df$variable))
   df$variable = factor(df$variable)
@@ -127,7 +122,7 @@ p = ggplot(cbs_wtd_regvars, aes(x = variable, y = value)) +
 suppressMessages(ggsave("cbs_wtd_accuracy.pdf", p, height = 5, dpi = 300))
 
 #CBS + LISS
-liss_regvars = liss_regvar_abs_errs$avg_abs_err_regvar
+liss_regvars = liss_regvars_abs_errs$abs_err
 names(liss_regvars) = c("liss")
 liss_regvars = melt(liss_regvars)
 
@@ -147,10 +142,9 @@ p = ggplot(cbs_liss_regvars, aes(x = bureau, y = value, fill = group)) +
     )
 suppressMessages(ggsave("cbs_liss_accuracy.pdf", p, height = 5, dpi = 300))
 
-
 #CBS + NOPVO + LISS
 
-nopvo_regvars = regvar_avg_abs_err
+nopvo_regvars = nopvo_regvars_avg_abs_err
 nopvo_regvars$variable = NULL
 nopvo_regvars$group = c("NOPVO")
 
@@ -167,10 +161,10 @@ p = ggplot(cbs_liss_nopvo_regvars, aes(x = reorder(bureau, value, max), y = valu
 suppressMessages(ggsave("cbs_liss_nopvo_accuracy.pdf", p, height = 5, dpi = 300))
 
 #weighted comparison
-aae_data = subset(regvar_avg_abs_err, select = c(bureau, value))
+aae_data = subset(nopvo_regvars_avg_abs_err, select = c(bureau, value))
 aae_data$group = c("NOPVO")
-names(cbs_regvars) = c("bureau", "value")
-cbs_regvars$group = c("CBS")
+names(cbs_regvars) = c("bureau", "value", "group")
+#cbs_regvars$group = c("CBS")
 
 aae_data = melt(rbind(aae_data, cbs_regvars))
 
@@ -215,63 +209,59 @@ d_ply(aae_delta, .(group), .progress = "text", function(df){
   suppressMessages(ggsave(paste(g, "_delta.pdf", sep=""), p, height = 5, dpi = 300))
 })
 
-
-
-
 ###################
 #Mahalanobis plots#
 ###################
-
-
-setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_mahal")
-
-# tmp = melt(regvars_dist)
-# d_ply(tmp, .(id), .progress = "text", function(dat){
-#   d_ply(dat, .(variable), function(df){
-#     id = unique(df$id)
-#     var = unique(df$variable)
-#     p = ggplot(df, aes(bureau, value)) + geom_bar(stat = "identity")
-#     suppressMessages(ggsave(paste(id, "_", var, ".pdf", sep=""), p))
-#   })    
-# })
-
-#barplots of number of significant distances
-
-#relabeling levels for facet_wrap() panel titles
-levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="three"] = "***" 
-levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="two"] = "**" 
-levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="one"] = "*" 
-levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="cross"] = "+" 
-
-levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="three"] = "***" 
-levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="two"] = "**" 
-levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="one"] = "*" 
-levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="cross"] = "+" 
-
-levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
-levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
-levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
-levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
-
-
-#rearranging in numeric descending order for facet_wrap() panel titles
-regvars_mahal_stars_count = arrange(regvars_mahal_stars_count, desc(as.numeric(bureau)))
-regvars_mahal_stars_count$bureau = factor(regvars_mahal_stars_count$bureau, as.character(regvars_mahal_stars_count$bureau)) #throws a warning
-
-regvars_wtd_mahal_stars_count = arrange(regvars_wtd_mahal_stars_count, desc(as.numeric(bureau)))
-regvars_wtd_mahal_stars_count$bureau = factor(regvars_wtd_mahal_stars_count$bureau, as.character(regvars_wtd_mahal_stars_count$bureau)) #throws a warning
-
-p = ggplot(regvars_mahal_stars_count, aes(bureau, value)) + 
-  geom_bar(stat="identity", position = "dodge") + facet_wrap(~ variable) +
-  scale_x_discrete("Bureaus") +
-  scale_y_continuous("Count", limits = c(0, 10)) +
-  opts(title = "Total significant mahalanobis distances over unweighted register variables", strip.text.x = theme_text(size=18))
-suppressMessages(ggsave("nopov_mahal_totals.pdf", p, height = 5.5, dpi = 300))
-
-p = ggplot(regvars_wtd_mahal_stars_count, aes(bureau, value)) + 
-  geom_bar(stat="identity", position = "dodge") + facet_wrap(~ variable) +
-  scale_x_discrete("Bureaus") +
-  scale_y_continuous("Count", limits = c(0, 10)) +
-  opts(title = "Total significant mahalanobis distances over weighted register variables", strip.text.x = theme_text(size=18))
-suppressMessages(ggsave("nopvo_mahal_wtd_totals.pdf", p, height = 5.5, dpi = 300))
-
+#TODO: Fix Mahalanobis plots
+# setwd("/Users/Rebecca/Dropbox/research/NOPVO/analysis/plots/summary_by_mahal")
+# 
+# # tmp = melt(regvars_dist)
+# # d_ply(tmp, .(id), .progress = "text", function(dat){
+# #   d_ply(dat, .(variable), function(df){
+# #     id = unique(df$id)
+# #     var = unique(df$variable)
+# #     p = ggplot(df, aes(bureau, value)) + geom_bar(stat = "identity")
+# #     suppressMessages(ggsave(paste(id, "_", var, ".pdf", sep=""), p))
+# #   })    
+# # })
+# 
+# #barplots of number of significant distances
+# 
+# #relabeling levels for facet_wrap() panel titles
+# levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="three"] = "***" 
+# levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="two"] = "**" 
+# levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="one"] = "*" 
+# levels(regvars_mahal_stars_count$variable)[levels(regvars_mahal_stars_count$variable)=="cross"] = "+" 
+# 
+# levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="three"] = "***" 
+# levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="two"] = "**" 
+# levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="one"] = "*" 
+# levels(regvars_wtd_mahal_stars_count$variable)[levels(regvars_wtd_mahal_stars_count$variable)=="cross"] = "+" 
+# 
+# levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
+# levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
+# levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
+# levels(liss_mahal_stars_count$variable)[levels(liss_mahal_stars_count$variable)=="cross"] = "+" 
+# 
+# 
+# #rearranging in numeric descending order for facet_wrap() panel titles
+# regvars_mahal_stars_count = arrange(regvars_mahal_stars_count, desc(as.numeric(bureau)))
+# regvars_mahal_stars_count$bureau = factor(regvars_mahal_stars_count$bureau, as.character(regvars_mahal_stars_count$bureau)) #throws a warning
+# 
+# regvars_wtd_mahal_stars_count = arrange(regvars_wtd_mahal_stars_count, desc(as.numeric(bureau)))
+# regvars_wtd_mahal_stars_count$bureau = factor(regvars_wtd_mahal_stars_count$bureau, as.character(regvars_wtd_mahal_stars_count$bureau)) #throws a warning
+# 
+# p = ggplot(regvars_mahal_stars_count, aes(bureau, value)) + 
+#   geom_bar(stat="identity", position = "dodge") + facet_wrap(~ variable) +
+#   scale_x_discrete("Bureaus") +
+#   scale_y_continuous("Count", limits = c(0, 10)) +
+#   opts(title = "Total significant mahalanobis distances over unweighted register variables", strip.text.x = theme_text(size=18))
+# suppressMessages(ggsave("nopov_mahal_totals.pdf", p, height = 5.5, dpi = 300))
+# 
+# p = ggplot(regvars_wtd_mahal_stars_count, aes(bureau, value)) + 
+#   geom_bar(stat="identity", position = "dodge") + facet_wrap(~ variable) +
+#   scale_x_discrete("Bureaus") +
+#   scale_y_continuous("Count", limits = c(0, 10)) +
+#   opts(title = "Total significant mahalanobis distances over weighted register variables", strip.text.x = theme_text(size=18))
+# suppressMessages(ggsave("nopvo_mahal_wtd_totals.pdf", p, height = 5.5, dpi = 300))
+# 

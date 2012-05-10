@@ -2,9 +2,9 @@
 #This script should be run from within analysis.R
 
 #source scripts
-#source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/nopvo_script.R")
-#source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/cbs_script.R")
-#source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/liss_script.R") #unloads Hmisc, loads car
+# source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/nopvo_script.R")
+# source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/cbs_script.R")
+# source("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/liss_script.R")
 
 #Load in data
 load("/Users/Rebecca/Dropbox/research/NOPVO/analysis/scripts/GBA_tables.RData")
@@ -62,15 +62,20 @@ names(reg_benchmarks) = tolower(names(reg_benchmarks))
 #####################################################################
 
 reg_benchmarks$nationality[1,] = reg_benchmarks$nationality[1,] + reg_benchmarks$nationality[3,]
-tmp = rownames(reg_benchmarks$nationality)
-tmp <- tmp[-3]
 reg_benchmarks$nationality = as.data.frame(reg_benchmarks$nationality[-3,])
 names(reg_benchmarks$nationality) = c("Percent")
-rownames(reg_benchmarks$nationality) = tmp
+rownames(reg_benchmarks$nationality) = c("Dutch", "non-Dutch")
 
 #IMPORTANT: need to reorder variables to make sure they match
 province_order <- names(nopvo_regvars_est$province)
 region_order <- names(nopvo_regvars_est$region)
+rownames(reg_benchmarks$region) = c(
+  "3 largest cities",
+  "East",
+  "North",
+  "South",
+  "West",
+  "6")
 reg_benchmarks$province <- reg_benchmarks$province[province_order,, drop=F]
 reg_benchmarks$region <- reg_benchmarks$region[region_order,, drop=F]
 rm(province_order, region_order)
@@ -88,6 +93,7 @@ names(reg_benchmarks$originfather) = c("Percent")
 reg_benchmarks$originmother <- as.data.frame(reg_benchmarks$originmother[-8,])
 rownames(reg_benchmarks$originmother) = tmp
 names(reg_benchmarks$originmother) = c("Percent")
+
 
 tmp = rownames(reg_benchmarks$numpersonshh)
 tmp = tmp[-7]
